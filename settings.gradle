@@ -1,0 +1,4 @@
+include ':remoteapp'
+include ':xbinder'
+include ':app'
+rootProject.name = "XBinder"

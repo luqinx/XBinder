@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.luqinx.xbinder">
+
+    <application>
+        <provider
+            android:permission="permission.xbinder.${applicationId}"
+            android:exported="true"
+            android:authorities="${applicationId}"
+            android:name=".BinderContentProvider"/>
+
+<!--        <service android:name=".keepalive.AliasService1"-->
+<!--            android:exported="true"-->
+<!--            android:process="${xbinder_process_alias_1}"-->
+<!--            android:permission="permission.xbinder.${applicationId}">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="${applicationId}:${xbinder_process_alias_1}"/>-->
+<!--            </intent-filter>-->
+<!--        </service>-->
+<!--        <service android:name=".keepalive.AliasService2"-->
+<!--            android:exported="true"-->
+<!--            android:process="${xbinder_process_alias_2}"-->
+<!--            android:permission="permission.xbinder.${applicationId}">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="${applicationId}:${xbinder_process_alias_2}"/>-->
+<!--            </intent-filter>-->
+<!--        </service>-->
+<!--        <service android:name=".keepalive.AliasService3"-->
+<!--            android:exported="true"-->
+<!--            android:process="${xbinder_process_alias_3}"-->
+<!--            android:permission="permission.xbinder.${applicationId}">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="${applicationId}:${xbinder_process_alias_3}"/>-->
+<!--            </intent-filter>-->
+<!--        </service>-->
+<!--        <service android:name=".keepalive.AliasService4"-->
+<!--            android:exported="true"-->
+<!--            android:process="${xbinder_process_alias_4}"-->
+<!--            android:permission="permission.xbinder.${applicationId}">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="${applicationId}:${xbinder_process_alias_4}"/>-->
+<!--            </intent-filter>-->
+<!--        </service>-->
+<!--        <service android:name=".keepalive.AliasService5"-->
+<!--            android:exported="true"-->
+<!--            android:process="${xbinder_process_alias_5}"-->
+<!--            android:permission="permission.xbinder.${applicationId}">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="${applicationId}:${xbinder_process_alias_5}"/>-->
+<!--            </intent-filter>-->
+<!--        </service>-->
+<!--        <service android:name=".keepalive.KeepAliveService"-->
+<!--            android:exported="true"-->
+<!--            android:permission="permission.xbinder.${applicationId}">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="${applicationId}"/>-->
+<!--            </intent-filter>-->
+<!--        </service>-->
+    </application>
+</manifest>

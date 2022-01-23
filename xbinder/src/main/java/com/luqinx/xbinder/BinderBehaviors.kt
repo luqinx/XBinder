@@ -1,5 +1,6 @@
 package com.luqinx.xbinder
 
+import com.luqinx.xbinder.annotation.InvokeType
 import java.lang.reflect.Method
 
 /**
@@ -19,9 +20,11 @@ internal object BinderBehaviors {
         rpcArgument.args = args
         rpcArgument.delegateId = delegateId
         rpcArgument.returnType = method.returnType
-//        rpcArgument.consArgs = options.constructorArgs
-//        rpcArgument.consTypes = options.constructorTypes
-        return BinderInvoker.invokeMethod(options.processName, rpcArgument)
+        return BinderInvoker.invokeMethod(
+            options.processName,
+            rpcArgument,
+            options.invokeType == InvokeType.REMOTE_FIRST
+        )
     }
 
 }

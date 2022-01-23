@@ -5,7 +5,7 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
 import android.os.Process
-import com.luqinx.xbinder.BinderContentProvider
+import com.luqinx.xbinder.XBinderProvider
 import com.luqinx.xbinder.context
 import com.luqinx.xbinder.interactiveProcessMap
 import com.luqinx.xbinder.logger
@@ -51,7 +51,7 @@ enum class KeepAliveStrategy {
             }
         }
         if (action == null) {
-            logger.w(message = "keep alive service action(${action}) not found!!!, current process is ${BinderContentProvider.processName}(${Process.myPid()})")
+            logger.w(message = "keep alive service action(${action}) not found!!!, current process is ${XBinderProvider.processName}(${Process.myPid()})")
             return
         }
         val intent = Intent(action)

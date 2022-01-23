@@ -19,7 +19,12 @@ android {
         manifestPlaceholders = [
                 "xbinder_process_alias_1": ":remote",
         ]
+    }
 
+    sourceSets {
+        main {
+            java.srcDirs += 'src/main/reflects'
+        }
     }
 
     buildTypes {

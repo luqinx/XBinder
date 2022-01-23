@@ -44,7 +44,6 @@
 
 ## 其他
 * 跨进程调用的过程回调 onMethodStart, onMethodDone, onMethodException, onMethodDelay
-* 解决国产机型无法唤醒ContentProvider问题
-* 方法拦截，
+* 解决国产机型无法唤醒ContentProvider问题，
 * 过程回调，提供回调接口，在远程方法执行过程中的不同阶段提供回调
 * 在provider中做初始化, 而不是在application

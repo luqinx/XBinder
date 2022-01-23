@@ -1,14 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.luqinx.xbinder">
+<manifest package="com.luqinx.xbinder">
 
     <application>
-        <provider
-            android:permission="permission.xbinder.${applicationId}"
-            android:exported="true"
-            android:authorities="${applicationId}"
-            android:name=".BinderContentProvider"/>
 
 <!--        <service android:name=".keepalive.AliasService1"-->
 <!--            android:exported="true"-->

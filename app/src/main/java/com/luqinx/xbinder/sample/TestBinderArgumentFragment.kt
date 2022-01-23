@@ -1,16 +1,16 @@
 package com.luqinx.xbinder.sample
 
 import android.annotation.SuppressLint
-import android.os.Build
+import android.os.SystemClock
 import android.view.View
 import android.widget.AdapterView
-import androidx.annotation.RequiresApi
 import chao.app.ami.Ami
 import chao.app.ami.base.AmiSimpleListFragment
 import com.luqinx.xbinder.sample.simple.PrimitiveArrayTypeService
 import com.luqinx.xbinder.sample.simple.PrimitiveBoxArrayTypeService
 import com.luqinx.xbinder.sample.simple.PrimitiveTypeService
 import com.luqinx.xbinder.sample.simple.SimpleTest
+import sun.reflect.Reflection
 import java.lang.reflect.GenericArrayType
 import java.lang.reflect.ParameterizedType
 
@@ -40,6 +40,16 @@ class TestBinderArgumentFragment: AmiSimpleListFragment() {
     }
 
     private fun test() {
+
+//        println("call class: " + Reflection.getCallerClass())
+        val start = SystemClock.elapsedRealtimeNanos()
+        try {
+            1/ 0
+        } catch (e: Throwable) {
+            println("1/0 spent ${SystemClock.elapsedRealtimeNanos() - start}ns")
+            e.printStackTrace()
+            println("1/0 spent ${SystemClock.elapsedRealtimeNanos() - start}ns after stack trace")
+        }
 
         val typeArrayClass = Class.forName("[Ljava.lang.reflect.Type;")
         println(typeArrayClass.javaClass)

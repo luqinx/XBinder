@@ -11,9 +11,14 @@ import android.os.IBinder
  */
 internal object BinderInvoker {
 
+    const val ERROR_CODE_SUCCESS = 0
+    const val ERROR_CODE_REMOTE_NOT_FOUND = 1
+    const val ERROR_CODE_WITH_EXCEPTION = 2
+
     fun invokeMethod(
         processName: String,
-        rpcArgument: ChannelMethodArgument
+        rpcArgument: ChannelMethodArgument,
+        localInvokeAfterRemoteMissing: Boolean
     ): Any? {
         val start = System.currentTimeMillis()
         var callSuccess = false
@@ -26,6 +31,9 @@ internal object BinderInvoker {
                     consumer = invokeConsumer
                     return value
                 } else {
+                    if (localInvokeAfterRemoteMissing && errCode == ERROR_CODE_REMOTE_NOT_FOUND) {
+                        throw XBinderException(errCode, errMessage)
+                    }
                     logger.e(
                         message = errMessage
                             ?: "invoke error !! (${rpcArgument.returnType} ${rpcArgument.method}(${
@@ -60,21 +68,28 @@ internal object BinderInvoker {
 
     private fun getCoreService(process: String): BinderChannelService? {
         // process name format
-        val host: String = if (process.startsWith(":")) {
-            XBinder.currentProcessName() + process.replace(":", ".")
-        } else {
-            process.replace(":", ".")
+        val host: String = when {
+            process.isEmpty() -> {
+                XBinder.currentProcessName()
+            }
+            process.startsWith(":") -> {
+                XBinder.currentProcessName() + process.replace(":", ".")
+            }
+            else -> {
+                process.replace(":", ".")
+            }
         }
         if (BINDER_CHANNEL_SERVICE_MAP[host] != null) {
             return BINDER_CHANNEL_SERVICE_MAP[host]
         }
+        val start = System.currentTimeMillis()
         val uri = Uri.parse("content://$host")
-        val cursor = XBinder.context.contentResolver.query(uri, null, null, null, null)
+        val cursor = context.contentResolver.query(uri, null, null, null, null)
         var binderChannelService: BinderChannelService? = null
         cursor?.apply {
-            extras.classLoader = options.classLoader
+            extras.classLoader = classloader
             val binderWrapper =
-                extras.getParcelable<ParcelableBinder>(BinderContentProvider.EXTRA_KEY_BINDER)
+                extras.getParcelable<ParcelableBinder>(XBinderProvider.EXTRA_KEY_BINDER)
             binderWrapper?.apply {
                 val binder = getBinder<IBinder>()
                 binder.linkToDeath({
@@ -87,6 +102,7 @@ internal object BinderInvoker {
             }
             close()
         }
+        logger.d(message = "query provider ${binderChannelService?.javaClass} spent ${System.currentTimeMillis() - start}ms")
         return binderChannelService
     }
 
@@ -96,7 +112,7 @@ internal object BinderInvoker {
 //        ServiceStore.onBinderDeath(process)
         ServiceProvider.onBinderDeath(process)
         BINDER_CHANNEL_SERVICE_MAP.remove(process)
-        keepAliveStrategy.onBinderDeath(process)
+        binderDeathHandler.onBinderDeath(process)
     }
 
     fun isRemoteAlive(process: String): Boolean {
@@ -105,13 +121,13 @@ internal object BinderInvoker {
 
     private fun showSlowInvoke(consumer: Long): Boolean {
         return when {
-            options.invokeThreshold == XBinderInitOptions.INVOKE_THRESHOLD_FORCE_ENABLE -> {
+            invokeThreshold == XBinderInitOptions.INVOKE_THRESHOLD_FORCE_ENABLE -> {
                 true
             }
-            options.invokeThreshold == XBinderInitOptions.INVOKE_THRESHOLD_DISABLE -> {
+            invokeThreshold == XBinderInitOptions.INVOKE_THRESHOLD_DISABLE -> {
                 false
             }
-            consumer > options.invokeThreshold -> {
+            consumer > invokeThreshold -> {
                 true
             }
             else -> false

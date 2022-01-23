@@ -24,8 +24,8 @@ internal object ServiceProvider {
             remoteService = serviceImplCache[fromProcess]?.get(delegateId)
             if (remoteService == null) {
                 serviceFinders.forEach {
-                    println("find $clazz impl by delegateId $delegateId")
-                    remoteService = it.doFind(clazz, consTypes, constArgs)
+                    logger.d(message  = "find $clazz impl by delegateId $delegateId")
+                    remoteService = it.doFind(fromProcess, clazz, consTypes, constArgs)
                     if (remoteService != null) {
                         if (serviceImplCache[fromProcess] == null) {
                             serviceImplCache[fromProcess] = SparseArray()

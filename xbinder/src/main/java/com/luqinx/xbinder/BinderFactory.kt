@@ -2,6 +2,7 @@ package com.luqinx.xbinder
 
 import com.luqinx.interceptor.Interceptor
 import com.luqinx.interceptor.OnInvoke
+import com.luqinx.xbinder.annotation.InvokeType
 import java.lang.reflect.Method
 
 /**
@@ -22,28 +23,53 @@ internal object BinderFactory {
                     }
                     override fun onInvoke(source: T?, method: Method?, args: Array<Any?>?): Any? {
                         logger.d(message = "onInvoke: ${method?.name}(${args?.contentDeepToString()})")
-                        method?.apply {
-                            return when (declaringClass) {
-                                Any::class.java -> {
-                                    args?.let {
-                                        invoke(objectBehaviors, *it)
-                                    } ?: run {
-                                        invoke(objectBehaviors)
+
+                        return method?.apply {
+                            val remoteCaller: Any? = when(declaringClass) {
+                                Any::class.java -> objectBehaviors
+                                IProxyBehaviors::class.java -> LOCAL_BEHAVIORS
+                                else -> BinderBehaviors
+                            }
+
+                            fun localInvoker():T? = ServiceProvider.doFind(
+                                options.processName,
+                                objectBehaviors.hashCode(),
+                                options.serviceClass,
+                                options.constructorTypes,
+                                options.constructorArgs
+                            ) as T?
+
+                            var caller = when (invokeType) {
+                                InvokeType.LOCAL_ONLY -> localInvoker()
+                                InvokeType.LOCAL_FIRST -> localInvoker() ?: remoteCaller
+                                InvokeType.REMOTE_ONLY -> remoteCaller
+                                InvokeType.REMOTE_FIRST -> remoteCaller
+                                else -> { throw IllegalArgumentException("unknown invoke type $invokeType") }
+                            } ?: options.defService ?: noOpService(options.serviceClass)
+
+                            if (caller == BinderBehaviors) {
+                                try {
+                                    return BinderBehaviors.invokeMethod(
+                                        serviceClass,
+                                        method,
+                                        args,
+                                        options,
+                                        objectBehaviors.hashCode()
+                                    )
+                                } catch (e: XBinderException) {
+                                    if (e.code != BinderInvoker.ERROR_CODE_REMOTE_NOT_FOUND) {
+                                        caller = localInvoker() ?: options.defService ?: noOpService(options.serviceClass)
+                                    } else {
+                                        throw e
                                     }
-                                }
-                                IProxyBehaviors::class.java -> {
-                                    args?.let {
-                                        invoke(LOCAL_BEHAVIORS, *it)
-                                    } ?: run {
-                                        invoke(LOCAL_BEHAVIORS)
-                                    }
-                                }
-                                else -> {
-                                    BinderBehaviors.invokeMethod(serviceClass, method, args, options, objectBehaviors.hashCode())
                                 }
                             }
+                            args?.let {
+                                invoke(caller, *it)
+                            } ?: run {
+                                invoke(caller)
+                            }
                         }
-                        return null
                     }
 
                 }).newInstance()!!

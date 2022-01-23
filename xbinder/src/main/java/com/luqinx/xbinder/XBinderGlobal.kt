@@ -1,7 +1,10 @@
 package com.luqinx.xbinder
 
-import com.luqinx.xbinder.keepalive.KeepAliveStrategy
-import java.util.ArrayList
+import android.content.Context
+import com.luqinx.xbinder.XBinderInitOptions.Companion.INVOKE_THRESHOLD_DISABLE
+import java.lang.reflect.InvocationHandler
+import java.lang.reflect.Proxy
+import java.util.*
 
 /**
  * @author  qinchao
@@ -11,18 +14,27 @@ import java.util.ArrayList
 
 internal const val CORE_METHOD_NEW_CONSTRUCTOR = "_\$newConstructor_"
 
-internal val context by lazy { XBinder.context }
+internal lateinit var context: Context
 
-internal val thisProcess by lazy { BinderContentProvider.processName }
+internal val thisProcess by lazy { XBinderProvider.processName }
 
-internal val options = XBinder.initOptions
+internal var invokeThreshold: Long = INVOKE_THRESHOLD_DISABLE
 
-internal var keepAliveStrategy: KeepAliveStrategy = KeepAliveStrategy.IGNORE
+internal var binderDeathHandler: BinderDeathHandler = BinderDeathHandler.IGNORE
 
-internal var logger: ILogger = options.logger ?: ILogger.SimpleLogger
+internal var logger: ILogger = ILogger.SimpleLogger
+
+internal var classloader = XBinder::class.java.classLoader
 
 internal val interactiveProcessMap = hashMapOf<String, List<String>>()
 
 internal var serviceFinders: ArrayList<IServiceFinder> = arrayListOf()
 
-internal var exceptionHandler = options.exceptionHandler ?: XBinderExceptionHandler.SimpleHandler
+internal var exceptionHandler: XBinderExceptionHandler = XBinderExceptionHandler.SimpleHandler
+
+internal var debuggable = false
+
+private val noOpHandler = InvocationHandler { _, _, _ -> null }
+
+internal fun noOpService(serviceClass: Class<*>): Any =
+    Proxy.newProxyInstance(classloader, arrayOf(serviceClass), noOpHandler)

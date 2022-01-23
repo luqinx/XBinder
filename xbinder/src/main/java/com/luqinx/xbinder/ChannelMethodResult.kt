@@ -14,6 +14,8 @@ class ChannelMethodResult() : Parcelable {
 
     var errMessage: String? = null
 
+    var errCode: Int = BinderInvoker.ERROR_CODE_SUCCESS
+
     var value: Any? = null
 
     var invokeConsumer = 0L
@@ -21,7 +23,7 @@ class ChannelMethodResult() : Parcelable {
     constructor(parcel: Parcel) : this() {
         succeed = parcel.readInt() == 1
         errMessage = parcel.readString()
-        value = parcel.readValue(options.classLoader)
+        value = parcel.readValue(classloader)
         invokeConsumer = parcel.readLong()
     }
 

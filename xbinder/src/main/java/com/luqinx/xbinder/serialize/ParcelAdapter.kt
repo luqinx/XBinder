@@ -1,8 +1,8 @@
 package com.luqinx.xbinder.serialize
 
 import android.os.Parcel
+import com.luqinx.xbinder.classloader
 import com.luqinx.xbinder.exceptionHandler
-import com.luqinx.xbinder.options
 import java.lang.reflect.GenericArrayType
 import java.lang.reflect.Type
 
@@ -43,7 +43,7 @@ interface ParcelAdapter<T: Any> {
                         }
                     }
                 } ?: run {
-                    return parcel.readValue(options.classLoader) 
+                    return parcel.readValue(classloader)
                 }
             }
         } catch (e: Throwable) {

@@ -1,7 +1,6 @@
 package com.luqinx.xbinder
 
 import android.util.Log
-import com.luqinx.xbinder.XBinder.initOptions
 
 /**
  * @author  qinchao
@@ -23,7 +22,9 @@ interface ILogger {
         const val TAG = "xbinder"
 
         override fun v(tag: String, message: String) {
-            Log.v(tag, message)
+            if (debuggable) {
+                Log.v(tag, message)
+            }
         }
 
         override fun i(tag: String, message: String) {
@@ -31,7 +32,7 @@ interface ILogger {
         }
 
         override fun d(tag: String, message: String) {
-            if (initOptions.debuggable) {
+            if (debuggable) {
                 Log.d(tag, message)
             }
         }

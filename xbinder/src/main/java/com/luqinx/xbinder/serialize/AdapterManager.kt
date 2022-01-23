@@ -50,7 +50,7 @@ internal object AdapterManager {
     }
 
     fun getAdapter(type: Type): ParcelAdapter<*>? {
-        if (type in whiteList || type.rawType() in whiteList) {
+        if (isInWhitList(type)) {
             return null
         }
         if  (type.rawType() == List::class.java && type.actualTypeArguments()!![0] in whiteList) {
@@ -59,5 +59,8 @@ internal object AdapterManager {
         return adapterMap[type] ?: adapterMap[type.rawType()]
     }
 
+    fun isInWhitList(type: Type): Boolean {
+        return type.rawType() in whiteList
+    }
 
 }

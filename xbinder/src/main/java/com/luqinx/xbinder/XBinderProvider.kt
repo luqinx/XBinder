@@ -13,13 +13,17 @@ import android.os.Bundle
 import android.os.IBinder
 import android.os.Process
 import android.text.TextUtils
+import androidx.annotation.CallSuper
+import com.luqinx.xbinder.keepalive.KeepAliveStrategy
+import com.luqinx.xbinder.serialize.AdapterManager
+import com.luqinx.xbinder.serialize.ParcelAdapter
 
 /**
  * @author  qinchao
  *
  * @since 2022/1/2
  */
-open class BinderContentProvider: ContentProvider() {
+abstract class XBinderProvider : ContentProvider() {
     
     companion object {
         internal const val TAG = "IpcProvider"
@@ -89,7 +93,8 @@ open class BinderContentProvider: ContentProvider() {
 
             if (clazzImpl == null) {
                 result.succeed = false
-                result.errMessage = "the impl of ${rpcArgument.clazz} not found."
+                result.errCode = BinderInvoker.ERROR_CODE_REMOTE_NOT_FOUND
+                result.errMessage = "not found the implementation of ${rpcArgument.clazz}."
                 return result
             }
             try {
@@ -118,10 +123,29 @@ open class BinderContentProvider: ContentProvider() {
 //            ServiceStore.unregisterMethodCallback(fromProcess, methodId)
         }
     }
-    
+
     override fun onCreate(): Boolean {
-        println("provider onCreate")
+        logger.d(message = "provider $javaClass onCreate")
+        com.luqinx.xbinder.context = context!!
+        val options = onInitOptions(context)
+        exceptionHandler = options.exceptionHandler
+        debuggable = options.debuggable
+        invokeThreshold = options.invokeThreshold
+        classloader = options.classLoader
+        binderDeathHandler = options.binderDeathHandler ?: BinderDeathHandler.IGNORE
+        logger = options.logger
+        XBinder.xbinderReady = true
         return false
+    }
+
+    abstract fun onInitOptions(context: Context?): XBinderInitOptions
+
+    protected fun registerTypeAdapter(type: Class<*>, adapter: ParcelAdapter<*>) {
+        XBinder.registerTypeAdapter(type, adapter)
+    }
+
+    protected fun addServiceFinder(serviceFinder: IServiceFinder) {
+        XBinder.addServiceFinder(serviceFinder)
     }
 
     override fun query(
@@ -131,7 +155,7 @@ open class BinderContentProvider: ContentProvider() {
         selectionArgs: Array<out String>?,
         sortOrder: String?
     ): Cursor {
-        println("provider query")
+        logger.d(message = "provider query")
         return BinderCursor(coreService)
     }
 
@@ -169,7 +193,7 @@ open class BinderContentProvider: ContentProvider() {
         }
 
         init {
-            binderExtra.classLoader = BinderContentProvider::class.java.classLoader
+            binderExtra.classLoader = XBinderProvider::class.java.classLoader
             binderExtra.putParcelable(EXTRA_KEY_BINDER, stub)
         }
     }

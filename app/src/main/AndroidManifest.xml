@@ -23,10 +23,16 @@
 
 
         <provider
+            android:authorities="${applicationId}"
+            android:name=".AppXBinderProvider"
+            android:exported="false" />
+
+        <provider
             android:authorities="${applicationId}.remote"
-            android:name=".RemoteBinderContentProvider"
+            android:name=".RemoteXBinderProvider"
             android:process=":remote"
             android:exported="false" />
+
     </application>
 
 </manifest>

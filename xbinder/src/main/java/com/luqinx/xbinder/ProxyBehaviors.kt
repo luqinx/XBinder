@@ -22,7 +22,7 @@ internal class ProxyBehaviors(
         argument.genericArgTypes = arrayOf(Array::class.java, Array::class.java)
         argument.returnType = Boolean::class.java
         argument.delegateId = delegateId
-        return BinderInvoker.invokeMethod(remoteProcessName, argument) as Boolean? ?: false
+        return BinderInvoker.invokeMethod(remoteProcessName, argument, false) as Boolean? ?: false
     }
 
     override fun getRemoteProcessName(): String {

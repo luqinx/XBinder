@@ -1,5 +1,7 @@
 package com.luqinx.xbinder
 
+import com.luqinx.xbinder.annotation.InvokeType
+
 /**
  * @author  qinchao
  *
@@ -14,6 +16,8 @@ internal class BinderOptions<T: IBinderService>(val serviceClass: Class<T>, val 
     var defService: T? = null
 
     var isCallback: Boolean = false
+
+    @InvokeType var invokeType: Int = InvokeType.REMOTE_ONLY
 
     fun constructorTypes(consTypes: Array<Class<*>>?): BinderOptions<T> {
         this.constructorTypes = consTypes
@@ -32,6 +36,11 @@ internal class BinderOptions<T: IBinderService>(val serviceClass: Class<T>, val 
 
     fun setIsCallback(callback: Boolean): BinderOptions<T> {
         this.isCallback = callback
+        return this
+    }
+
+    fun invokeType(invokeType: Int): BinderOptions<T> {
+        this.invokeType = invokeType
         return this
     }
 

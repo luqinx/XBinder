@@ -1,8 +1,7 @@
 package com.luqinx.xbinder
 
-import android.content.Context
+import com.luqinx.xbinder.annotation.InvokeType
 import com.luqinx.xbinder.serialize.AdapterManager
-import com.luqinx.xbinder.keepalive.KeepAliveStrategy
 import com.luqinx.xbinder.serialize.ParcelAdapter
 
 /**
@@ -12,20 +11,7 @@ import com.luqinx.xbinder.serialize.ParcelAdapter
  */
 object XBinder {
 
-    internal lateinit var context: Context
-
-    internal lateinit var initOptions: XBinderInitOptions
-
-    @JvmStatic
-    @JvmOverloads
-    fun init(context: Context, initOptions: XBinderInitOptions? = null) {
-        this.context = context
-        this.initOptions = initOptions ?: XBinderInitOptions()
-        this.initOptions.keepAliveStrategyHandler?.apply {
-            keepAliveStrategy = KeepAliveStrategy.CUSTOM
-            keepAliveStrategy.setCustomAliveStrategyHandler(this)
-        }
-    }
+    var xbinderReady = false
 
     /**
      *  this method will return a dynamic proxy of the given service class who will calling the remote methods
@@ -36,27 +22,46 @@ object XBinder {
      *  @param constructorArgs the remote service constructors' values, it must be null if the constructorTypes is null
      *  and it's array size must be equals with constructorTypes
      *  @param defService default service will be called if the remote service not exists
+     *  @param invokeType_
      */
     @JvmStatic
     @JvmOverloads
-    fun <T: IBinderService> getBinder(binderClass: Class<T>, processName: String, constructorTypes: Array<Class<*>>? = null, constructorArgs: Array<*>? = null, defService: T? = null): T {
+    fun <T : IBinderService> getBinder(
+        binderClass: Class<T>,
+        processName: String = "",
+        constructorTypes: Array<Class<*>>? = null,
+        constructorArgs: Array<*>? = null,
+        defService: T? = null,
+        @InvokeType invokeType_: Int = InvokeType.REMOTE_ONLY
+    ): T {
         if (constructorArgs != null && constructorTypes != null && constructorArgs.size != constructorTypes.size) {
             throw IllegalArgumentException("constructor arguments' size not match: args{${constructorArgs}}, types{${constructorTypes}}")
         }
         if ((constructorArgs == null && constructorTypes != null) || (constructorArgs != null && constructorTypes == null)) {
             throw IllegalArgumentException("constructor arguments not match: arguments and it's types should be null or not null at the same time")
         }
+        if (!xbinderReady) {
+            throw IllegalStateException("xbinder config error: please refer to the readme.md file for xbinder's initialization.")
+        }
+        val invokeType = if (processName == currentProcessName()) {
+             InvokeType.LOCAL_ONLY
+        } else {
+            invokeType_
+        }
         return BinderFactory.newBinder(
             BinderOptions(binderClass, processName)
-            .constructorTypes(constructorTypes)
-            .constructorArgs(constructorArgs)
-            .defaultService(defService)
+                .constructorTypes(constructorTypes)
+                .constructorArgs(constructorArgs)
+                .invokeType(invokeType)
+                .defaultService(defService)
         )
     }
 
     @JvmStatic
     fun registerTypeAdapter(type: Class<*>, adapter: ParcelAdapter<*>) {
-        AdapterManager.register(type, adapter)
+        if (!AdapterManager.isInWhitList(type)) {
+            AdapterManager.register(type, adapter)
+        }
     }
 
     /**
@@ -76,6 +81,8 @@ object XBinder {
 
     @JvmStatic
     fun currentProcessName(): String {
-        return BinderContentProvider.processName
+        return XBinderProvider.processName
     }
+
+
 }

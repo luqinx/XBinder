@@ -1,7 +1,7 @@
 package com.luqinx.xbinder.serialize
 
 import android.os.Parcel
-import com.luqinx.xbinder.options
+import com.luqinx.xbinder.classloader
 import java.lang.reflect.Type
 
 /**
@@ -20,7 +20,7 @@ object ObjectAdapter: ParcelAdapter<Any> {
     }
 
     override fun readInstance(component: Type, parcel: Parcel): Any? {
-        return parcel.readValue(options.classLoader)
+        return parcel.readValue(classloader)
     }
 
 }

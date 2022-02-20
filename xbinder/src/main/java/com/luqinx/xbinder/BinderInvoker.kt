@@ -14,6 +14,7 @@ internal object BinderInvoker {
     const val ERROR_CODE_SUCCESS = 0
     const val ERROR_CODE_REMOTE_NOT_FOUND = 1
     const val ERROR_CODE_WITH_EXCEPTION = 2
+    const val ERROR_CODE_ONEWAY_ERROR = 3
 
     fun invokeMethod(
         processName: String,
@@ -38,7 +39,7 @@ internal object BinderInvoker {
                         message = errMessage
                             ?: "invoke error !! (${rpcArgument.returnType} ${rpcArgument.method}(${
                             rpcArgument.genericArgTypes?.let {
-                                return@let (it as Array<*>).contentDeepToString()
+                                return@let it.contentDeepToString()
                             } ?: ""
                             }))")
                 }
@@ -56,9 +57,9 @@ internal object BinderInvoker {
                 logger.i(
                     message = "${rpcArgument.returnType} ${rpcArgument.method}(${
                     rpcArgument.args?.let {
-                        return@let (it as Array<*>).contentDeepToString()
+                        return@let it.contentDeepToString()
                     } ?: ""
-                    }) in ${rpcArgument.clazz.simpleName} invoked ${if (callSuccess) "success" else "fail"} & spent ${consumer}/${delta}ms")
+                    }) in ${rpcArgument.clazz} invoked ${if (callSuccess) "success" else "fail"} & spent ${consumer}/${delta}ms")
             }
         }
         return null
@@ -67,43 +68,35 @@ internal object BinderInvoker {
     private val BINDER_CHANNEL_SERVICE_MAP: MutableMap<String, BinderChannelService> = mutableMapOf()
 
     private fun getCoreService(process: String): BinderChannelService? {
-        // process name format
-        val host: String = when {
-            process.isEmpty() -> {
-                XBinder.currentProcessName()
-            }
-            process.startsWith(":") -> {
-                XBinder.currentProcessName() + process.replace(":", ".")
-            }
-            else -> {
-                process.replace(":", ".")
-            }
-        }
-        if (BINDER_CHANNEL_SERVICE_MAP[host] != null) {
-            return BINDER_CHANNEL_SERVICE_MAP[host]
-        }
-        val start = System.currentTimeMillis()
-        val uri = Uri.parse("content://$host")
-        val cursor = context.contentResolver.query(uri, null, null, null, null)
-        var binderChannelService: BinderChannelService? = null
-        cursor?.apply {
-            extras.classLoader = classloader
-            val binderWrapper =
-                extras.getParcelable<ParcelableBinder>(XBinderProvider.EXTRA_KEY_BINDER)
-            binderWrapper?.apply {
-                val binder = getBinder<IBinder>()
-                binder.linkToDeath({
-                    onBinderDeath(process)
-                }, 0)
-                val service: BinderChannelService = BinderChannelService.Stub.asInterface(getBinder())
-                BINDER_CHANNEL_SERVICE_MAP[host] = service
-                binderChannelService = service
+        return BINDER_CHANNEL_SERVICE_MAP[process] ?: synchronized(BINDER_CHANNEL_SERVICE_MAP) {
+            // double check
+            BINDER_CHANNEL_SERVICE_MAP[process] ?: let {
 
+                val start = System.currentTimeMillis()
+                val uri = Uri.parse("content://$process")
+                val cursor = context.contentResolver.query(uri, null, null, null, null)
+                var binderChannelService: BinderChannelService? = null
+                cursor?.apply {
+                    extras.classLoader = classloader
+                    val binderWrapper =
+                        extras.getParcelable<ParcelableBinder>(XBinderProvider.EXTRA_KEY_BINDER)
+                    binderWrapper?.apply {
+                        val binder = getBinder<IBinder>()
+                        binder.linkToDeath({
+                            onBinderDeath(process)
+                        }, 0)
+                        val service: BinderChannelService =
+                            BinderChannelService.Stub.asInterface(getBinder())
+                        BINDER_CHANNEL_SERVICE_MAP[process] = service
+                        binderChannelService = service
+
+                    }
+                    close()
+                }
+                logger.d(message = "query provider ${binderChannelService?.javaClass} spent ${System.currentTimeMillis() - start}ms")
+                return binderChannelService
             }
-            close()
         }
-        logger.d(message = "query provider ${binderChannelService?.javaClass} spent ${System.currentTimeMillis() - start}ms")
-        return binderChannelService
     }
 
     private fun onBinderDeath(process: String) {
@@ -111,7 +104,9 @@ internal object BinderInvoker {
 //        CallbacksWatcher.onBinderDeath(process)
 //        ServiceStore.onBinderDeath(process)
         ServiceProvider.onBinderDeath(process)
-        BINDER_CHANNEL_SERVICE_MAP.remove(process)
+        synchronized(BINDER_CHANNEL_SERVICE_MAP) {
+            BINDER_CHANNEL_SERVICE_MAP.remove(process)
+        }
         binderDeathHandler.onBinderDeath(process)
     }
 

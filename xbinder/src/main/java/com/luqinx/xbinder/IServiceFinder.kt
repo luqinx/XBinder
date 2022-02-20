@@ -4,7 +4,7 @@ interface IServiceFinder {
     fun doFind(
         fromProcess: String,
         clazz: Class<*>,
-        consTypes: Array<out Class<*>>?,
+        consTypes: Array<*>?,
         constArgs: Array<*>?
     ): IBinderService?
 }

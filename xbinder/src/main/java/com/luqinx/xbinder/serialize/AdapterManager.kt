@@ -13,7 +13,7 @@ internal object AdapterManager {
 
     private val adapterMap = hashMapOf<Type, ParcelAdapter<*>>()
 
-    private val whiteList = arrayListOf<Class<*>>(
+    private val whiteList = hashSetOf<Class<*>>(
         Byte::class.java, ByteArray::class.java,
         Char::class.java, CharArray::class.java,
         Short::class.java, ShortArray::class.java,
@@ -43,6 +43,9 @@ internal object AdapterManager {
 
     fun <T: ParcelAdapter<*>> register(type: Type, adapter: T) {
         adapterMap[type] = adapter
+        if (type is Class<*>) {
+            ClassAdapter.avoidReflectionAdapterTypeCache[type.name] = type
+        }
     }
 
     fun unregister(type: Type) {

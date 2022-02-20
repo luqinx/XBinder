@@ -12,7 +12,7 @@ class AppXBinderProvider: XBinderProvider() {
 
     override fun onInitOptions(context: Context?): XBinderInitOptions {
         val options = XBinderInitOptions()
-        options.debuggable = true
+        options.debuggable = false
         options.invokeThreshold = XBinderInitOptions.INVOKE_THRESHOLD_FORCE_ENABLE
         options.logger = ILogger.SimpleLogger
 
@@ -20,7 +20,7 @@ class AppXBinderProvider: XBinderProvider() {
             override fun doFind(
                 fromProcess: String,
                 clazz: Class<*>,
-                consTypes: Array<out Class<*>>?,
+                consTypes: Array<*>?,
                 constArgs: Array<*>?
             ): IBinderService? {
                 return null
@@ -29,5 +29,9 @@ class AppXBinderProvider: XBinderProvider() {
 
 
         return options
+    }
+
+    override fun avoidReflectionClasses(): List<Class<*>>? {
+        return null
     }
 }

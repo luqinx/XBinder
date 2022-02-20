@@ -13,10 +13,10 @@ import android.os.Bundle
 import android.os.IBinder
 import android.os.Process
 import android.text.TextUtils
-import androidx.annotation.CallSuper
-import com.luqinx.xbinder.keepalive.KeepAliveStrategy
-import com.luqinx.xbinder.serialize.AdapterManager
+import com.luqinx.xbinder.serialize.ClassAdapter
 import com.luqinx.xbinder.serialize.ParcelAdapter
+import com.luqinx.xbinder.serialize.toClass
+import java.lang.RuntimeException
 
 /**
  * @author  qinchao
@@ -71,16 +71,19 @@ abstract class XBinderProvider : ContentProvider() {
 
     private val coreService = object : BinderChannelService.Stub() {
         override fun invokeMethod(rpcArgument: ChannelMethodArgument): ChannelMethodResult {
-            logger.d(message = "invokeMethod by ${rpcArgument.delegateId}: ${rpcArgument.returnType} ${rpcArgument.method}(${rpcArgument.args?.let {
-                return@let (it as Array<*>).contentDeepToString()
-            } ?: ""})")
+            logger.d(
+                message = "invokeMethod by ${rpcArgument.delegateId}: ${rpcArgument.returnType} ${rpcArgument.method}(${
+                    rpcArgument.args?.let {
+                        return@let it.contentDeepToString()
+                    } ?: ""
+                })")
             val result = ChannelMethodResult()
             result.succeed = true
             val clazzImpl: IBinderService?
             if (rpcArgument.method == CORE_METHOD_NEW_CONSTRUCTOR) {
                 rpcArgument.run {
                     val start = System.currentTimeMillis()
-                    clazzImpl = ServiceProvider.doFind(fromProcess, delegateId, clazz, args?.get(0) as Array<Class<*>>?, args?.get(1) as Array<*>? )
+                    clazzImpl = ServiceProvider.doFind(fromProcess, delegateId, clazz.toClass()!!, genericArgTypes, args)
                     result.value = clazzImpl != null
                     result.invokeConsumer = System.currentTimeMillis() - start
                     return result
@@ -94,7 +97,7 @@ abstract class XBinderProvider : ContentProvider() {
             if (clazzImpl == null) {
                 result.succeed = false
                 result.errCode = BinderInvoker.ERROR_CODE_REMOTE_NOT_FOUND
-                result.errMessage = "not found the implementation of ${rpcArgument.clazz}."
+                result.errMessage = "not found the implementation of ${rpcArgument.clazz.toClass()}."
                 return result
             }
             try {
@@ -134,6 +137,7 @@ abstract class XBinderProvider : ContentProvider() {
         classloader = options.classLoader
         binderDeathHandler = options.binderDeathHandler ?: BinderDeathHandler.IGNORE
         logger = options.logger
+        ClassAdapter.avoidReflection(avoidReflectionClasses())
         XBinder.xbinderReady = true
         return false
     }
@@ -197,4 +201,6 @@ abstract class XBinderProvider : ContentProvider() {
             binderExtra.putParcelable(EXTRA_KEY_BINDER, stub)
         }
     }
+
+    abstract fun avoidReflectionClasses(): List<Class<*>>?
 }

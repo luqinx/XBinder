@@ -10,7 +10,6 @@ import com.luqinx.xbinder.sample.simple.PrimitiveArrayTypeService
 import com.luqinx.xbinder.sample.simple.PrimitiveBoxArrayTypeService
 import com.luqinx.xbinder.sample.simple.PrimitiveTypeService
 import com.luqinx.xbinder.sample.simple.SimpleTest
-import sun.reflect.Reflection
 import java.lang.reflect.GenericArrayType
 import java.lang.reflect.ParameterizedType
 
@@ -103,7 +102,7 @@ class TestBinderArgumentFragment: AmiSimpleListFragment() {
         val stringArray = arrayOf("16", "17", null)
         val byteArray = arrayOf(18.toByte(), 19, 20)
 
-        val service = App.getRemoteBinder(PrimitiveBoxArrayTypeService::class.java)
+        val service = App.getRemoteService(PrimitiveBoxArrayTypeService::class.java)
         service.setCharArray(charArray)
         service.setBooleanArray(booleanArray)
         service.setByteArray(byteArray)
@@ -130,7 +129,7 @@ class TestBinderArgumentFragment: AmiSimpleListFragment() {
 
     @SuppressLint("Assert")
     private fun testPrimitiveArrays() {
-        val service = App.getRemoteBinder(PrimitiveArrayTypeService::class.java)
+        val service = App.getRemoteService(PrimitiveArrayTypeService::class.java)
         service.setCharArray(charArrayOf('h', 'e', 'l', 'l', 'o'))
         service.setBooleanArray(booleanArrayOf(true, false, true))
         service.setByteArray(byteArrayOf(1, 2, 3))
@@ -179,7 +178,7 @@ class TestBinderArgumentFragment: AmiSimpleListFragment() {
 
     @SuppressLint("Assert")
     private fun testPrimitiveTypes() {
-        val service = App.getRemoteBinder(PrimitiveTypeService::class.java)
+        val service = App.getRemoteService(PrimitiveTypeService::class.java)
         service.run()
         assert(service.getBoolean())
         assert(service.getByte() == 'b'.toByte())

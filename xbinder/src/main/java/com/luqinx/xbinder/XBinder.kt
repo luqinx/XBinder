@@ -3,6 +3,7 @@ package com.luqinx.xbinder
 import com.luqinx.xbinder.annotation.InvokeType
 import com.luqinx.xbinder.serialize.AdapterManager
 import com.luqinx.xbinder.serialize.ParcelAdapter
+import java.lang.reflect.Type
 
 /**
  * @author  qinchao
@@ -13,10 +14,54 @@ object XBinder {
 
     var xbinderReady = false
 
+    @JvmStatic
+    @JvmOverloads
+    fun <T : IBinderService> getService(
+        serviceClass: Class<T>,
+        processName: String = "",
+        constructorTypes: Array<Class<*>>? = null,
+        constructorArgs: Array<*>? = null,
+        defService: T? = null,
+        @InvokeType invokeType_: Int = InvokeType.REMOTE_ONLY
+    ): T {
+        return getServiceInner(
+            serviceClass,
+            processName,
+            constructorTypes as Array<*>?,
+            constructorArgs,
+            defService,
+            invokeType_
+        )
+    }
+
+    /**
+     *  @see getServiceInner
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun <T : IBinderService> getParameterizedService(
+        serviceClass: Class<T>,
+        processName: String = "",
+        constructorTypes: Array<Type>? = null,
+        constructorArgs: Array<*>? = null,
+        defService: T? = null,
+        @InvokeType invokeType_: Int = InvokeType.REMOTE_ONLY
+    ): T {
+        // not complete
+        return getServiceInner(
+            serviceClass,
+            processName,
+            constructorTypes as Array<*>?,
+            constructorArgs,
+            defService,
+            invokeType_
+        )
+    }
+
     /**
      *  this method will return a dynamic proxy of the given service class who will calling the remote methods
      *
-     *  @param binderClass the remote service's class
+     *  @param serviceClass the remote service's class
      *  @param processName remote process name
      *  @param constructorTypes the remote service constructors' types
      *  @param constructorArgs the remote service constructors' values, it must be null if the constructorTypes is null
@@ -24,12 +69,10 @@ object XBinder {
      *  @param defService default service will be called if the remote service not exists
      *  @param invokeType_
      */
-    @JvmStatic
-    @JvmOverloads
-    fun <T : IBinderService> getBinder(
-        binderClass: Class<T>,
+    private fun <T : IBinderService> getServiceInner(
+        serviceClass: Class<T>,
         processName: String = "",
-        constructorTypes: Array<Class<*>>? = null,
+        constructorTypes: Array<*>? = null,
         constructorArgs: Array<*>? = null,
         defService: T? = null,
         @InvokeType invokeType_: Int = InvokeType.REMOTE_ONLY
@@ -43,13 +86,29 @@ object XBinder {
         if (!xbinderReady) {
             throw IllegalStateException("xbinder config error: please refer to the readme.md file for xbinder's initialization.")
         }
-        val invokeType = if (processName == currentProcessName()) {
+
+        // realProcessName spent 0.2ms in xiaomi-9A
+        val realProcessName: String = when {
+            processName.isEmpty() -> {
+                currentProcessName()
+            }
+            processName.startsWith(":") -> {
+                currentProcessName() + processName.replaceFirst(":", ".")
+            }
+            else -> {
+                processName.replaceFirst(":", ".")
+            }
+        }
+        val invokeType = if (realProcessName == currentProcessName()) {
+            if (invokeType_ == InvokeType.REMOTE_ONLY) {
+                throw java.lang.IllegalArgumentException("check your process name please")
+            }
              InvokeType.LOCAL_ONLY
         } else {
             invokeType_
         }
-        return BinderFactory.newBinder(
-            BinderOptions(binderClass, processName)
+        return ServiceFactory.newService(
+            NewServiceOptions(serviceClass, realProcessName)
                 .constructorTypes(constructorTypes)
                 .constructorArgs(constructorArgs)
                 .invokeType(invokeType)
@@ -84,5 +143,8 @@ object XBinder {
         return XBinderProvider.processName
     }
 
+    internal fun hasGradlePlugin(): Boolean {
+        return false
+    }
 
 }

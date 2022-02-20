@@ -1,6 +1,7 @@
 package com.luqinx.xbinder
 
 import androidx.annotation.Keep
+import java.lang.reflect.Type
 
 /**
  *
@@ -20,7 +21,7 @@ interface IProxyBehaviors {
      *
      *  create remote service
      */
-    @JvmDefault fun `_$newConstructor_`(consTypes: Array<Class<*>>?, consArgs: Array<*>?): Boolean { return false }
+    @JvmDefault fun `_$newConstructor_`(consTypes: Array<*>?, consArgs: Array<*>?): Boolean { return false }
 
     /**
      *  !!! don't override this method

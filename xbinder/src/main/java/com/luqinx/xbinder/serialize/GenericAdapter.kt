@@ -1,6 +1,7 @@
 package com.luqinx.xbinder.serialize
 
 import android.os.Parcel
+import com.luqinx.xbinder.exceptionHandler
 import java.lang.reflect.GenericArrayType
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type

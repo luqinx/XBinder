@@ -36,7 +36,8 @@ class MainActivity : AppCompatActivity() {
 //        setupActionBarWithNavController(navController, appBarConfiguration)
 //        navView.setupWithNavController(navController)
 //        UI.show(this, TestBinderArgumentFragment::class.java)
-        UI.show(this, TestInvokeTypeFragment::class.java)
+//        UI.show(this, TestInvokeTypeFragment::class.java)
+        UI.show(this, TestAsyncOnewayFragment::class.java)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

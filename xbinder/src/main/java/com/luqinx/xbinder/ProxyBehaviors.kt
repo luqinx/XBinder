@@ -1,7 +1,5 @@
 package com.luqinx.xbinder
 
-import java.lang.reflect.Type
-
 /**
  * @author  qinchao
  *
@@ -14,13 +12,13 @@ internal class ProxyBehaviors(
     private val isCallback: Boolean = false
 ): IProxyBehaviors {
 
-    override fun `_$newConstructor_`(consTypes: Array<Class<*>>?, consArgs: Array<*>?): Boolean {
+    override fun `_$newConstructor_`(consTypes: Array<*>?, consArgs: Array<*>?): Boolean {
         val argument = ChannelMethodArgument()
-        argument.clazz = serviceClass
+        argument.clazz = serviceClass.name
         argument.method = CORE_METHOD_NEW_CONSTRUCTOR
-        argument.args = arrayOf(consTypes, consArgs)
-        argument.genericArgTypes = arrayOf(Array::class.java, Array::class.java)
-        argument.returnType = Boolean::class.java
+        argument.args = consArgs
+        argument.genericArgTypes = consTypes
+        argument.returnType = "boolean"
         argument.delegateId = delegateId
         return BinderInvoker.invokeMethod(remoteProcessName, argument, false) as Boolean? ?: false
     }

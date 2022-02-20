@@ -11,8 +11,8 @@ internal object ServiceProvider {
         fromProcess: String,
         delegateId: Int,
         clazz: Class<*>,
-        consTypes: Array<out Class<*>>?,
-        constArgs: Array<out Any?>?
+        consTypes: Array<*>?,
+        constArgs: Array<*>?
     ): IBinderService? {
         var remoteService = serviceImplCache[fromProcess]?.get(delegateId)
         if (remoteService != null) {

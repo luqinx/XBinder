@@ -3,6 +3,11 @@
  */
 package com.luqinx.xbinder;
 
+import android.os.IBinder;
+import android.os.RemoteException;
+
+import androidx.annotation.NonNull;
+
 public interface BinderChannelService extends android.os.IInterface
 {
   /** Default implementation for IPCService. */
@@ -61,22 +66,29 @@ public interface BinderChannelService extends android.os.IInterface
         case TRANSACTION_invokeMethod:
         {
           data.enforceInterface(descriptor);
-          ChannelMethodArgument _arg0;
-          if ((0!=data.readInt())) {
-            _arg0 = ChannelMethodArgument.CREATOR.createFromParcel(data);
+          ChannelMethodArgument _arg0 = ChannelMethodArgument.CREATOR.createFromParcel(data);
+          ChannelMethodResult _result = null;
+          if (_arg0.asyncCall) {
+            XBinderExecutor.INSTANCE.executeAsyncCall(() -> {
+              try {
+                invokeMethod(_arg0);
+              } catch (RemoteException e) {
+                e.printStackTrace();
+              }
+            });
+          } else {
+            _result = invokeMethod(_arg0);
           }
-          else {
-            _arg0 = null;
+          if (!_arg0.onewayCall) {
+            reply.writeNoException();
+            if ((_result != null)) {
+              reply.writeInt(1);
+              _result.writeToParcel(reply, android.os.Parcelable.PARCELABLE_WRITE_RETURN_VALUE);
+            } else {
+              reply.writeInt(0);
+            }
           }
-          ChannelMethodResult _result = this.invokeMethod(_arg0);
-          reply.writeNoException();
-          if ((_result!=null)) {
-            reply.writeInt(1);
-            _result.writeToParcel(reply, android.os.Parcelable.PARCELABLE_WRITE_RETURN_VALUE);
-          }
-          else {
-            reply.writeInt(0);
-          }
+
           return true;
         }
         case TRANSACTION_unRegisterCallbackMethod:
@@ -111,31 +123,35 @@ public interface BinderChannelService extends android.os.IInterface
       {
         return DESCRIPTOR;
       }
-      @Override public ChannelMethodResult invokeMethod(ChannelMethodArgument rpcArgument) throws android.os.RemoteException
+      @Override public ChannelMethodResult invokeMethod(@NonNull ChannelMethodArgument rpcArgument) throws android.os.RemoteException
       {
         android.os.Parcel _data = android.os.Parcel.obtain();
         android.os.Parcel _reply = android.os.Parcel.obtain();
-        ChannelMethodResult _result;
+        ChannelMethodResult _result = null;
         try {
           _data.writeInterfaceToken(DESCRIPTOR);
-          if ((rpcArgument !=null)) {
-            _data.writeInt(1);
-            rpcArgument.writeToParcel(_data, 0);
-          }
-          else {
-            _data.writeInt(0);
-          }
-          boolean _status = mRemote.transact(Stub.TRANSACTION_invokeMethod, _data, _reply, 0);
+          rpcArgument.writeToParcel(_data, 0);
+          int flags = rpcArgument.onewayCall ? IBinder.FLAG_ONEWAY: 0;
+          boolean _status = mRemote.transact(Stub.TRANSACTION_invokeMethod, _data, _reply, flags);
           if (!_status && getDefaultImpl() != null) {
             return getDefaultImpl().invokeMethod(rpcArgument);
           }
-          _reply.readException();
-          if ((0!=_reply.readInt())) {
-            _result = ChannelMethodResult.CREATOR.createFromParcel(_reply);
+          if (flags != IBinder.FLAG_ONEWAY) {
+            _reply.readException();
+            if ((0 != _reply.readInt())) {
+              _result = ChannelMethodResult.CREATOR.createFromParcel(_reply);
+            }
+          } else {
+            // oneway
+            _result = new ChannelMethodResult();
+            _result.setSucceed(_status);
+            _result.setInvokeConsumer(0L);
+            if (!_status) {
+              _result.setErrCode(BinderInvoker.ERROR_CODE_ONEWAY_ERROR);
+              _result.setErrMessage("oneway failed!");
+            }
           }
-          else {
-            _result = null;
-          }
+
         }
         finally {
           _reply.recycle();

@@ -38,3 +38,4 @@ private val noOpHandler = InvocationHandler { _, _, _ -> null }
 
 internal fun noOpService(serviceClass: Class<*>): Any =
     Proxy.newProxyInstance(classloader, arrayOf(serviceClass), noOpHandler)
+

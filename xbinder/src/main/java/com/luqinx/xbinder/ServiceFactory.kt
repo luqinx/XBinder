@@ -3,6 +3,7 @@ package com.luqinx.xbinder
 import com.luqinx.interceptor.Interceptor
 import com.luqinx.interceptor.OnInvoke
 import com.luqinx.xbinder.annotation.InvokeType
+import com.luqinx.xbinder.misc.Refined
 import java.lang.reflect.Method
 
 /**
@@ -10,9 +11,9 @@ import java.lang.reflect.Method
  *
  * @since 2022/1/2
  */
-internal object BinderFactory {
+internal object ServiceFactory {
 
-    fun <T: IBinderService> newBinder(options: BinderOptions<T>): T {
+    fun <T: IBinderService> newService(options: NewServiceOptions<T>): T {
         val service = options.run {
             Interceptor.of(null as T?).interfaces(serviceClass).intercepted(true)
                 .invoke(object : OnInvoke<T?> {
@@ -22,10 +23,12 @@ internal object BinderFactory {
                         ProxyBehaviors(processName, serviceClass, objectBehaviors.hashCode())
                     }
                     override fun onInvoke(source: T?, method: Method?, args: Array<Any?>?): Any? {
-                        logger.d(message = "onInvoke: ${method?.name}(${args?.contentDeepToString()})")
+//                        Refined.start()
+//                        logger.d(message = "onInvoke: ${method?.name}(${args?.contentDeepToString()})")
+//                        Refined.finish("logger onInvoke ")
 
                         return method?.apply {
-                            val remoteCaller: Any? = when(declaringClass) {
+                            val remoteCaller: Any = when(declaringClass) {
                                 Any::class.java -> objectBehaviors
                                 IProxyBehaviors::class.java -> LOCAL_BEHAVIORS
                                 else -> BinderBehaviors
@@ -50,7 +53,7 @@ internal object BinderFactory {
                             if (caller == BinderBehaviors) {
                                 try {
                                     return BinderBehaviors.invokeMethod(
-                                        serviceClass,
+                                        serviceClass, //
                                         method,
                                         args,
                                         options,
@@ -65,9 +68,9 @@ internal object BinderFactory {
                                 }
                             }
                             args?.let {
-                                invoke(caller, *it)
+                                return invoke(caller, *it)
                             } ?: run {
-                                invoke(caller)
+                                return invoke(caller)
                             }
                         }
                     }
@@ -78,7 +81,7 @@ internal object BinderFactory {
         return service
     }
 
-    fun <T: IBinderService> newCallback(options: BinderOptions<T>): T? {
+    fun <T: IBinderService> newCallback(options: NewServiceOptions<T>): T? {
         return null
     }
 }

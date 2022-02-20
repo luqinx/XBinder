@@ -18,13 +18,13 @@ public class App extends Application {
 
     }
 
-    public static <T extends IBinderService> T getRemoteBinder(Class<T> binderClass) {
-        return XBinder.getBinder(binderClass, ":remote");
+    public static <T extends IBinderService> T getRemoteService(Class<T> binderClass) {
+        return XBinder.getService(binderClass, ":remote");
     }
 
-    public static <T extends IBinderService> T getAppBinder(Class<T> binderClass) {
-//        return XBinder.getBinder(binderClass, BuildConfig.APPLICATION_ID); // 同下面等价
-//        return XBinder.getBinder(binderClass, "");   // 同下面等价
-        return XBinder.getBinder(binderClass); // 默认主进程
+    public static <T extends IBinderService> T getAppService(Class<T> binderClass) {
+//        return XBinder.getService(binderClass, BuildConfig.APPLICATION_ID); // 同下面等价
+//        return XBinder.getService(binderClass, "");   // 同下面等价
+        return XBinder.getService(binderClass); // 默认主进程
     }
 }

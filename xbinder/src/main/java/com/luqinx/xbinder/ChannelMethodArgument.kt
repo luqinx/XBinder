@@ -2,6 +2,7 @@ package com.luqinx.xbinder
 
 import android.os.Parcel
 import android.os.Parcelable
+import com.luqinx.xbinder.misc.Refined
 import com.luqinx.xbinder.serialize.ClassAdapter
 import com.luqinx.xbinder.serialize.ObjectAdapter
 import com.luqinx.xbinder.serialize.GenericAdapter
@@ -10,6 +11,7 @@ import java.lang.IllegalArgumentException
 import java.lang.reflect.GenericArrayType
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
+import java.sql.Ref
 
 /**
  * @author  qinchao
@@ -18,15 +20,21 @@ import java.lang.reflect.Type
  */
 internal class ChannelMethodArgument() : Parcelable {
 
-    internal lateinit var clazz: Class<*>
+    @JvmField
+    internal var onewayCall = false
+
+    @JvmField
+    internal var asyncCall = false
+
+    internal lateinit var clazz: String
 
     internal lateinit var method: String
 
-    internal lateinit var returnType: Type
+    internal lateinit var returnType: String
 
-    internal var args: Array<Any?>? = null
+    internal var args: Array<*>? = null
 
-    internal var genericArgTypes: Array<Type>? = null
+    internal var genericArgTypes: Array<*>? = null
 
     internal lateinit var fromProcess: String
 
@@ -50,28 +58,47 @@ internal class ChannelMethodArgument() : Parcelable {
         }
 
     constructor(parcel: Parcel) : this() {
+        Refined.start()
         fromProcess = parcel.readString()!!
-        clazz = ClassAdapter.readInstance(Class::class.java, parcel)!! as Class<*>
+        clazz = parcel.readString()!!
         method = parcel.readString()!!
-        returnType = GenericAdapter.read(Class::class.java, parcel)!! as Class<*>
+        returnType = parcel.readString()!!
+        asyncCall = parcel.readInt() != 0
+        onewayCall = parcel.readInt() != 0
         delegateId = parcel.readInt()
 
-        genericArgTypes = GenericAdapter.read(Array::class.java, parcel) as Array<Type>?
-        args = ObjectAdapter.read(genericArgTypes?.javaClass!! , parcel) as Array<Any?>?
+        val paramsCount = parcel.readInt()
+        if (paramsCount > 0) {
+            genericArgTypes = GenericAdapter.read(Array::class.java, parcel) as Array<Type>?
+            args = ObjectAdapter.read(genericArgTypes?.javaClass!!, parcel) as Array<Any?>?
+        }
+        Refined.finish("$method readParcel")
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
+        Refined.start()
         parcel.writeString(XBinder.currentProcessName())
-        ClassAdapter.writeInstance(clazz, clazz.javaClass, parcel)
+        parcel.writeString(clazz)
         parcel.writeString(method)
-        GenericAdapter.write(returnType, returnType.javaClass,  parcel)
+        parcel.writeString(returnType)
+        parcel.writeInt(if (asyncCall) 1 else 0)
+        parcel.writeInt(if (onewayCall) 1 else 0)
         parcel.writeInt(delegateId)
         try {
-            GenericAdapter.write(genericArgTypes, genericArgTypes?.javaClass ?: Array<Type>::class.java ,parcel)
-            ObjectAdapter.write(args, args?.javaClass ?: Array<Any>::class.java, parcel)
+            val paramsCount = genericArgTypes?.size ?: 0
+            parcel.writeInt(paramsCount)
+            if (paramsCount > 0) {
+                GenericAdapter.write(
+                    genericArgTypes,
+                    genericArgTypes?.javaClass ?: Array<Type>::class.java,
+                    parcel
+                )
+                ObjectAdapter.write(args, args?.javaClass ?: Array<Any>::class.java, parcel)
+            }
         } catch (e: Throwable) {
             exceptionHandler.handle(e)
         }
+        Refined.finish("$method writeToParcel")
     }
 
     override fun describeContents(): Int {

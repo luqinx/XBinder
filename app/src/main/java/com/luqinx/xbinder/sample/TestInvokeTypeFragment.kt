@@ -25,6 +25,6 @@ class TestInvokeTypeFragment: AmiSimpleListFragment() {
     }
 
     private fun testLocalOnly() {
-        App.get
+
     }
 }

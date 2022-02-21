@@ -13,10 +13,9 @@ import android.os.Bundle
 import android.os.IBinder
 import android.os.Process
 import android.text.TextUtils
+import com.luqinx.xbinder.BinderChannelProvider.coreChannel
 import com.luqinx.xbinder.serialize.ClassAdapter
 import com.luqinx.xbinder.serialize.ParcelAdapter
-import com.luqinx.xbinder.serialize.toClass
-import java.lang.RuntimeException
 
 /**
  * @author  qinchao
@@ -104,7 +103,7 @@ abstract class XBinderProvider : ContentProvider() {
         sortOrder: String?
     ): Cursor {
         logger.d(message = "provider query")
-        return BinderCursor(coreService)
+        return BinderCursor(coreChannel)
     }
 
     override fun getType(uri: Uri): String? {

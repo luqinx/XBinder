@@ -2,6 +2,7 @@ package com.luqinx.xbinder
 
 import android.net.Uri
 import android.os.IBinder
+import com.luqinx.xbinder.serialize.toClass
 
 /**
  * @author  qinchao
@@ -34,7 +35,9 @@ internal object BinderChannelProvider {
                             BinderChannel.Stub.asInterface(getBinder())
                         BINDER_CHANNEL_MAP[process] = service
                         binderChannel = service
-                        binderChannel!!.registerCallbackChannel(XBinder.currentProcessName(), coreService)
+                        binderChannel!!.registerCallbackChannel(XBinder.currentProcessName(),
+                            coreChannel
+                        )
                     }
                     close()
                 }
@@ -53,6 +56,68 @@ internal object BinderChannelProvider {
     fun onBinderDeath(process: String) {
         synchronized(BINDER_CHANNEL_MAP) {
             BINDER_CHANNEL_MAP.remove(process)
+        }
+    }
+
+    internal val coreChannel = object : BinderChannel.Stub() {
+        override fun invokeMethod(rpcArgument: ChannelMethodArgument): ChannelMethodResult {
+            logger.d(
+                message = "invokeMethod by ${rpcArgument.delegateId}: ${rpcArgument.returnType} ${rpcArgument.method}(${
+                    rpcArgument.args?.let {
+                        return@let it.contentDeepToString()
+                    } ?: ""
+                })")
+            val result = ChannelMethodResult()
+            result.succeed = true
+            val clazzImpl: IBinderService?
+            if (rpcArgument.method == CORE_METHOD_NEW_CONSTRUCTOR) {
+                rpcArgument.run {
+                    val start = System.currentTimeMillis()
+                    clazzImpl = ServiceProvider.doFind(fromProcess, delegateId, clazz.toClass()!!, genericArgTypes, args)
+                    result.value = clazzImpl != null
+                    result.invokeConsumer = System.currentTimeMillis() - start
+                    return result
+                }
+            } else {
+                rpcArgument.run {
+                    clazzImpl = ServiceProvider.getServiceImpl(fromProcess, delegateId)
+                }
+            }
+
+            if (clazzImpl == null) {
+                result.succeed = false
+                result.errCode = BinderInvoker.ERROR_CODE_REMOTE_NOT_FOUND
+                result.errMessage = "not found the implementation of ${rpcArgument.clazz.toClass()}."
+                return result
+            }
+            try {
+                if (rpcArgument.argTypes == null || rpcArgument.argTypes!!.isEmpty()) {
+                    val method = clazzImpl.javaClass.getDeclaredMethod(rpcArgument.method)
+                    method.isAccessible = true
+                    val start = System.currentTimeMillis()
+                    result.value = method.invoke(clazzImpl)
+                    result.invokeConsumer = System.currentTimeMillis() - start
+                } else {
+                    val method = clazzImpl.javaClass.getDeclaredMethod(rpcArgument.method, *rpcArgument.argTypes!!)
+                    method.isAccessible = true
+                    val start = System.currentTimeMillis()
+                    result.value = method.invoke(clazzImpl, *rpcArgument.args!!)
+                    result.invokeConsumer = System.currentTimeMillis() - start
+                }
+            } catch (e: Throwable) {
+                result.succeed = false
+                result.errMessage = e.message
+                exceptionHandler.handle(e)
+            }
+            return result
+        }
+
+        override fun registerCallbackChannel(process: String, channel: BinderChannel) {
+            addBinderChannel(process, channel)
+        }
+
+        override fun unRegisterCallbackMethod(fromProcess: String, methodId: String) {
+//            ServiceStore.unregisterMethodCallback(fromProcess, methodId)
         }
     }
 }

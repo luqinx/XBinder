@@ -86,8 +86,14 @@ internal class ChannelMethodArgument() : Parcelable {
         parcel.writeInt(delegateId)
         try {
             val paramsCount = genericArgTypes?.size ?: 0
+            for (i in 0 until paramsCount) {
+
+            }
+
+
             parcel.writeInt(paramsCount)
             if (paramsCount > 0) {
+
                 GenericAdapter.write(
                     genericArgTypes,
                     genericArgTypes?.javaClass ?: Array<Type>::class.java,

@@ -8,15 +8,21 @@ import android.os.RemoteException;
 
 import androidx.annotation.NonNull;
 
-public interface BinderChannelService extends android.os.IInterface
+public interface BinderChannel extends android.os.IInterface
 {
   /** Default implementation for IPCService. */
-  public static class Default implements BinderChannelService
+  public static class Default implements BinderChannel
   {
     @Override public ChannelMethodResult invokeMethod(ChannelMethodArgument rpcArgument) throws android.os.RemoteException
     {
       return null;
     }
+
+    @Override
+    public void registerCallbackChannel(String process, BinderChannel channel) throws android.os.RemoteException {
+
+    }
+
     @Override public void unRegisterCallbackMethod(java.lang.String fromProcess, java.lang.String methodId) throws android.os.RemoteException
     {
     }
@@ -26,7 +32,7 @@ public interface BinderChannelService extends android.os.IInterface
     }
   }
   /** Local-side IPC implementation stub class. */
-  public static abstract class Stub extends android.os.Binder implements BinderChannelService
+  public static abstract class Stub extends android.os.Binder implements BinderChannel
   {
     private static final java.lang.String DESCRIPTOR = "IPCService";
     /** Construct the stub at attach it to the interface. */
@@ -38,16 +44,16 @@ public interface BinderChannelService extends android.os.IInterface
      * Cast an IBinder object into an IPCService interface,
      * generating a proxy if needed.
      */
-    public static BinderChannelService asInterface(android.os.IBinder obj)
+    public static BinderChannel asInterface(android.os.IBinder obj)
     {
       if ((obj==null)) {
         return null;
       }
       android.os.IInterface iin = obj.queryLocalInterface(DESCRIPTOR);
-      if (((iin!=null)&&(iin instanceof BinderChannelService))) {
-        return ((BinderChannelService)iin);
+      if (((iin!=null)&&(iin instanceof BinderChannel))) {
+        return ((BinderChannel)iin);
       }
-      return new BinderChannelService.Stub.Proxy(obj);
+      return new BinderChannel.Stub.Proxy(obj);
     }
     @Override public android.os.IBinder asBinder()
     {
@@ -102,13 +108,19 @@ public interface BinderChannelService extends android.os.IInterface
           reply.writeNoException();
           return true;
         }
+        case TRANSACTION_registerCallbackBinder:
+          data.enforceInterface(descriptor);
+          this.registerCallbackChannel(data.readString(),
+                  BinderChannel.Stub.asInterface(data.readStrongBinder())
+          );
+          return true;
         default:
         {
           return super.onTransact(code, data, reply, flags);
         }
       }
     }
-    private static class Proxy implements BinderChannelService
+    private static class Proxy implements BinderChannel
     {
       private android.os.IBinder mRemote;
       Proxy(android.os.IBinder remote)
@@ -151,13 +163,28 @@ public interface BinderChannelService extends android.os.IInterface
               _result.setErrMessage("oneway failed!");
             }
           }
-
         }
         finally {
           _reply.recycle();
           _data.recycle();
         }
         return _result;
+      }
+
+      @Override
+      public void registerCallbackChannel(String process, BinderChannel callbackService) throws android.os.RemoteException {
+        android.os.Parcel _data = android.os.Parcel.obtain();
+        try {
+          _data.writeInterfaceToken(DESCRIPTOR);
+          _data.writeStrongBinder(callbackService.asBinder());
+          boolean _status = mRemote.transact(Stub.TRANSACTION_registerCallbackBinder, _data, null, android.os.IBinder.FLAG_ONEWAY);
+          if (!_status && getDefaultImpl() != null) {
+            getDefaultImpl().registerCallbackChannel(process, callbackService);
+          }
+        }
+        finally {
+          _data.recycle();
+        }
       }
 
       @Override public void unRegisterCallbackMethod(java.lang.String fromProcess, java.lang.String methodId) throws android.os.RemoteException
@@ -180,11 +207,12 @@ public interface BinderChannelService extends android.os.IInterface
           _data.recycle();
         }
       }
-      public static BinderChannelService sDefaultImpl;
+      public static BinderChannel sDefaultImpl;
     }
     static final int TRANSACTION_invokeMethod = (android.os.IBinder.FIRST_CALL_TRANSACTION);
     static final int TRANSACTION_unRegisterCallbackMethod = (android.os.IBinder.FIRST_CALL_TRANSACTION + 1);
-    public static boolean setDefaultImpl(BinderChannelService impl) {
+    static final int TRANSACTION_registerCallbackBinder = (android.os.IBinder.FIRST_CALL_TRANSACTION + 2);
+    public static boolean setDefaultImpl(BinderChannel impl) {
       // Only one user of this interface can use this function
       // at a time. This is a heuristic to detect if two different
       // users in the same process use this function.
@@ -197,11 +225,12 @@ public interface BinderChannelService extends android.os.IInterface
       }
       return false;
     }
-    public static BinderChannelService getDefaultImpl() {
+    public static BinderChannel getDefaultImpl() {
       return Stub.Proxy.sDefaultImpl;
     }
   }
   public ChannelMethodResult invokeMethod(ChannelMethodArgument rpcArgument) throws android.os.RemoteException;
+  public void registerCallbackChannel(String process, BinderChannel channel) throws android.os.RemoteException;
 //  public ParcelableResult invokeCallbackMethod(IPCallbackMethod ipcMethod) throws android.os.RemoteException;
   public void unRegisterCallbackMethod(java.lang.String fromProcess, java.lang.String methodId) throws android.os.RemoteException;
 }

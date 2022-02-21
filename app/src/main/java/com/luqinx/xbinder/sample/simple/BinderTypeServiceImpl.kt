@@ -29,5 +29,8 @@ class BinderTypeServiceImpl: BinderTypeService {
             println("oneway service normal call end!! ${Thread.currentThread().name}")
 
         }
+
+        override fun registerOneway(onewayInstance: Oneway?) {
+        }
     }
 }

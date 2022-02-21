@@ -1,8 +1,6 @@
 package com.luqinx.xbinder
 
-import android.net.Uri
 import android.os.DeadObjectException
-import android.os.IBinder
 
 /**
  * @author  qinchao
@@ -23,7 +21,7 @@ internal object BinderInvoker {
     ): Any? {
         val start = System.currentTimeMillis()
         var callSuccess = false
-        val coreService = getCoreService(processName)
+        val coreService = BinderChannelProvider.getBinderChannel(processName)
         var consumer = 0L
         try {
             coreService?.invokeMethod(rpcArgument)?.apply {
@@ -48,7 +46,7 @@ internal object BinderInvoker {
             }
         } catch (e: DeadObjectException) {
             exceptionHandler.handle(e)
-            onBinderDeath(processName)
+            dispatchBinderDeath(processName)
         } catch (e: Throwable) {
             exceptionHandler.handle(e)
         } finally {
@@ -65,54 +63,18 @@ internal object BinderInvoker {
         return null
     }
 
-    private val BINDER_CHANNEL_SERVICE_MAP: MutableMap<String, BinderChannelService> = mutableMapOf()
-
-    private fun getCoreService(process: String): BinderChannelService? {
-        return BINDER_CHANNEL_SERVICE_MAP[process] ?: synchronized(BINDER_CHANNEL_SERVICE_MAP) {
-            // double check
-            BINDER_CHANNEL_SERVICE_MAP[process] ?: let {
-
-                val start = System.currentTimeMillis()
-                val uri = Uri.parse("content://$process")
-                val cursor = context.contentResolver.query(uri, null, null, null, null)
-                var binderChannelService: BinderChannelService? = null
-                cursor?.apply {
-                    extras.classLoader = classloader
-                    val binderWrapper =
-                        extras.getParcelable<ParcelableBinder>(XBinderProvider.EXTRA_KEY_BINDER)
-                    binderWrapper?.apply {
-                        val binder = getBinder<IBinder>()
-                        binder.linkToDeath({
-                            onBinderDeath(process)
-                        }, 0)
-                        val service: BinderChannelService =
-                            BinderChannelService.Stub.asInterface(getBinder())
-                        BINDER_CHANNEL_SERVICE_MAP[process] = service
-                        binderChannelService = service
-
-                    }
-                    close()
-                }
-                logger.d(message = "query provider ${binderChannelService?.javaClass} spent ${System.currentTimeMillis() - start}ms")
-                return binderChannelService
-            }
-        }
-    }
-
-    private fun onBinderDeath(process: String) {
+    fun dispatchBinderDeath(process: String) {
         logger.w(message = "process has dead: $process")
+        BinderChannelProvider.onBinderDeath(process)
 //        CallbacksWatcher.onBinderDeath(process)
 //        ServiceStore.onBinderDeath(process)
         ServiceProvider.onBinderDeath(process)
-        synchronized(BINDER_CHANNEL_SERVICE_MAP) {
-            BINDER_CHANNEL_SERVICE_MAP.remove(process)
-        }
         binderDeathHandler.onBinderDeath(process)
     }
 
-    fun isRemoteAlive(process: String): Boolean {
-        return BINDER_CHANNEL_SERVICE_MAP[process] != null
-    }
+//    fun isRemoteAlive(process: String): Boolean {
+//        return BINDER_CHANNEL_MAP[process] != null
+//    }
 
     private fun showSlowInvoke(consumer: Long): Boolean {
         return when {

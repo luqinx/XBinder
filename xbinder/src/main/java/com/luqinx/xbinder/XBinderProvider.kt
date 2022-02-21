@@ -69,63 +69,7 @@ abstract class XBinderProvider : ContentProvider() {
         }
     }
 
-    private val coreService = object : BinderChannelService.Stub() {
-        override fun invokeMethod(rpcArgument: ChannelMethodArgument): ChannelMethodResult {
-            logger.d(
-                message = "invokeMethod by ${rpcArgument.delegateId}: ${rpcArgument.returnType} ${rpcArgument.method}(${
-                    rpcArgument.args?.let {
-                        return@let it.contentDeepToString()
-                    } ?: ""
-                })")
-            val result = ChannelMethodResult()
-            result.succeed = true
-            val clazzImpl: IBinderService?
-            if (rpcArgument.method == CORE_METHOD_NEW_CONSTRUCTOR) {
-                rpcArgument.run {
-                    val start = System.currentTimeMillis()
-                    clazzImpl = ServiceProvider.doFind(fromProcess, delegateId, clazz.toClass()!!, genericArgTypes, args)
-                    result.value = clazzImpl != null
-                    result.invokeConsumer = System.currentTimeMillis() - start
-                    return result
-                }
-            } else {
-                rpcArgument.run {
-                    clazzImpl = ServiceProvider.getServiceImpl(fromProcess, delegateId)
-                }
-            }
 
-            if (clazzImpl == null) {
-                result.succeed = false
-                result.errCode = BinderInvoker.ERROR_CODE_REMOTE_NOT_FOUND
-                result.errMessage = "not found the implementation of ${rpcArgument.clazz.toClass()}."
-                return result
-            }
-            try {
-                if (rpcArgument.argTypes == null || rpcArgument.argTypes!!.isEmpty()) {
-                    val method = clazzImpl.javaClass.getDeclaredMethod(rpcArgument.method)
-                    method.isAccessible = true
-                    val start = System.currentTimeMillis()
-                    result.value = method.invoke(clazzImpl)
-                    result.invokeConsumer = System.currentTimeMillis() - start
-                } else {
-                    val method = clazzImpl.javaClass.getDeclaredMethod(rpcArgument.method, *rpcArgument.argTypes!!)
-                    method.isAccessible = true
-                    val start = System.currentTimeMillis()
-                    result.value = method.invoke(clazzImpl, *rpcArgument.args!!)
-                    result.invokeConsumer = System.currentTimeMillis() - start
-                }
-            } catch (e: Throwable) {
-                result.succeed = false
-                result.errMessage = e.message
-                exceptionHandler.handle(e)
-            }
-            return result
-        }
-
-        override fun unRegisterCallbackMethod(fromProcess: String, methodId: String) {
-//            ServiceStore.unregisterMethodCallback(fromProcess, methodId)
-        }
-    }
 
     override fun onCreate(): Boolean {
         logger.d(message = "provider $javaClass onCreate")

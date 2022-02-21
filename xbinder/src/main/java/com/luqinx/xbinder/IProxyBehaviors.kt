@@ -21,7 +21,7 @@ interface IProxyBehaviors {
      *
      *  create remote service
      */
-    @JvmDefault fun `_$newConstructor_`(consTypes: Array<*>?, consArgs: Array<*>?): Boolean { return false }
+    @JvmDefault fun `_$newConstructor_`(consTypes: Array<*>?, consArgs: Array<*>?): Boolean = false
 
     /**
      *  !!! don't override this method
@@ -29,7 +29,7 @@ interface IProxyBehaviors {
      *
      *  @return return true if origin process is dead
      */
-    @JvmDefault fun isBinderAlive(): Boolean { return false } // will be intercepted by ServiceLocalBehaviors
+    @JvmDefault fun isBinderAlive(): Boolean = false// will be intercepted by ServiceLocalBehaviors
 
     /**
      *  !!! don't override this method
@@ -37,7 +37,7 @@ interface IProxyBehaviors {
      *
      *  @return return true if origin process is exist
      */
-    @JvmDefault fun isRemoteServiceExist(): Boolean { return false } // will be intercepted by ServiceLocalBehaviors
+    @JvmDefault fun isRemoteServiceExist(): Boolean = false // will be intercepted by ServiceLocalBehaviors
 
     /**
      *  !!! don't override this method
@@ -45,5 +45,5 @@ interface IProxyBehaviors {
      *
      *  @return return the name of the process who communication with
      */
-    @JvmDefault fun getRemoteProcessName(): String { return "" } // will be intercepted by ServiceLocalBehaviors
+    @JvmDefault fun getRemoteProcessName(): String = "" // will be intercepted by ServiceLocalBehaviors
 }

@@ -14,6 +14,8 @@ internal object BinderInvoker {
     const val ERROR_CODE_WITH_EXCEPTION = 2
     const val ERROR_CODE_ONEWAY_ERROR = 3
 
+    private val threadLocal = ThreadLocal<InvokerHolder>()
+
     fun invokeMethod(
         processName: String,
         rpcArgument: ChannelArgument,
@@ -21,10 +23,11 @@ internal object BinderInvoker {
     ): Any? {
         val start = System.currentTimeMillis()
         var callSuccess = false
-        val coreService = ChannelProvider.getBinderChannel(processName)
+        val channelBinder = ChannelProvider.getBinderChannel(processName)
         var consumer = 0L
         try {
-            coreService?.invokeMethod(rpcArgument)?.apply {
+            threadLocal.set(InvokerHolder(processName))
+            channelBinder?.invokeMethod(rpcArgument)?.apply {
                 if (succeed) {
                     callSuccess = true
                     consumer = invokeConsumer
@@ -50,6 +53,8 @@ internal object BinderInvoker {
         } catch (e: Throwable) {
             exceptionHandler.handle(e)
         } finally {
+            threadLocal.set(null)
+
             val delta = System.currentTimeMillis() - start
             if (showSlowInvoke(delta)) {
                 logger.i(
@@ -91,5 +96,9 @@ internal object BinderInvoker {
         }
     }
 
+    fun invokeProcess(): String {
+        return threadLocal.get()?.toProcess!!
+    }
 
+    class InvokerHolder(val toProcess:String)
 }

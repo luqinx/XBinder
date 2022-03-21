@@ -61,7 +61,11 @@ internal object AdapterManager {
         if  (type.rawType() == List::class.java && type.actualTypeArguments()!![0] in whiteList) {
             return null
         }
-        if (basicComponent is Class<*> && IBinderService::class.java.isAssignableFrom(basicComponent)) {
+        if (basicComponent is Class<*> && IBinderService::class.java.isAssignableFrom(basicComponent)
+            || (basicComponent.componentType() is Class<*> && IBinderService::class.java.isAssignableFrom(
+                basicComponent.componentType() as Class<*>
+            ))
+        ) {
             return ServiceAdapter
         }
         return adapterMap[type] ?: adapterMap[type.rawType()]

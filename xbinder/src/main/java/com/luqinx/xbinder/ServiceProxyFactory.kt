@@ -28,7 +28,12 @@ internal object ServiceProxyFactory {
         return options.run {
             Interceptor.of(null as T?).interfaces(serviceClass).intercepted(true)
                 .invoke(object : OnInvoke<T?> {
-                    private val objectBehaviors: ObjectBehaviors = ObjectBehaviors(serviceClass)
+                    private val objectBehaviors: ObjectBehaviors =
+                        ObjectBehaviors(
+                            serviceClass,
+                            options.processName,
+                            if (options is NewCallbackOptions) options.instanceId else null
+                        )
 
                     private val LOCAL_BEHAVIORS: ProxyBehaviors by lazy {
                         ProxyBehaviors(processName, serviceClass, objectBehaviors.hashCode())

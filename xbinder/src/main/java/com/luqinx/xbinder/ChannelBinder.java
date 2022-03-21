@@ -29,7 +29,7 @@ public interface ChannelBinder extends android.os.IInterface
         return null;
       }
       android.os.IInterface iin = obj.queryLocalInterface(DESCRIPTOR);
-      if (((iin!=null)&&(iin instanceof ChannelBinder))) {
+      if (((iin instanceof ChannelBinder))) {
         return ((ChannelBinder)iin);
       }
       return new ChannelBinder.Stub.Proxy(obj);
@@ -51,7 +51,7 @@ public interface ChannelBinder extends android.os.IInterface
         case TRANSACTION_invokeMethod:
         {
           data.enforceInterface(descriptor);
-          ChannelArgument _arg0 = ChannelArgument.CREATOR.createFromParcel(data);
+          ChannelArgument _arg0 = new ChannelArgument(data);
           ChannelResult _result = null;
           if (_arg0.asyncCall) {
             XBinderExecutor.INSTANCE.executeAsyncCall(() -> {
@@ -76,17 +76,6 @@ public interface ChannelBinder extends android.os.IInterface
 
           return true;
         }
-        case TRANSACTION_unRegisterCallbackMethod:
-        {
-          data.enforceInterface(descriptor);
-          java.lang.String _arg0;
-          _arg0 = data.readString();
-          java.lang.String _arg1;
-          _arg1 = data.readString();
-          this.unRegisterCallbackMethod(_arg0, _arg1);
-          reply.writeNoException();
-          return true;
-        }
         case TRANSACTION_registerCallbackBinder:
           data.enforceInterface(descriptor);
           this.registerCallbackChannel(data.readString(),
@@ -101,7 +90,7 @@ public interface ChannelBinder extends android.os.IInterface
     }
     private static class Proxy implements ChannelBinder
     {
-      private android.os.IBinder mRemote;
+      private final android.os.IBinder mRemote;
       Proxy(android.os.IBinder remote)
       {
         mRemote = remote;
@@ -130,7 +119,7 @@ public interface ChannelBinder extends android.os.IInterface
           if (flags != IBinder.FLAG_ONEWAY) {
             _reply.readException();
             if ((0 != _reply.readInt())) {
-              _result = ChannelResult.CREATOR.createFromParcel(_reply);
+              _result = new ChannelResult(_reply);
             }
           } else {
             // oneway
@@ -166,51 +155,14 @@ public interface ChannelBinder extends android.os.IInterface
           _data.recycle();
         }
       }
-
-      @Override public void unRegisterCallbackMethod(java.lang.String fromProcess, java.lang.String methodId) throws android.os.RemoteException
-      {
-        android.os.Parcel _data = android.os.Parcel.obtain();
-        android.os.Parcel _reply = android.os.Parcel.obtain();
-        try {
-          _data.writeInterfaceToken(DESCRIPTOR);
-          _data.writeString(fromProcess);
-          _data.writeString(methodId);
-          boolean _status = mRemote.transact(Stub.TRANSACTION_unRegisterCallbackMethod, _data, _reply, 0);
-          if (!_status && getDefaultImpl() != null) {
-//            getDefaultImpl().unRegisterCallbackMethod(fromProcess, methodId);
-            return;
-          }
-          _reply.readException();
-        }
-        finally {
-          _reply.recycle();
-          _data.recycle();
-        }
-      }
       public static ChannelBinder sDefaultImpl;
     }
     static final int TRANSACTION_invokeMethod = (android.os.IBinder.FIRST_CALL_TRANSACTION);
-    static final int TRANSACTION_unRegisterCallbackMethod = (android.os.IBinder.FIRST_CALL_TRANSACTION + 1);
-    static final int TRANSACTION_registerCallbackBinder = (android.os.IBinder.FIRST_CALL_TRANSACTION + 2);
-    public static boolean setDefaultImpl(ChannelBinder impl) {
-      // Only one user of this interface can use this function
-      // at a time. This is a heuristic to detect if two different
-      // users in the same process use this function.
-      if (Stub.Proxy.sDefaultImpl != null) {
-        throw new IllegalStateException("setDefaultImpl() called twice");
-      }
-      if (impl != null) {
-        Stub.Proxy.sDefaultImpl = impl;
-        return true;
-      }
-      return false;
-    }
+    static final int TRANSACTION_registerCallbackBinder = (android.os.IBinder.FIRST_CALL_TRANSACTION + 1);
     public static ChannelBinder getDefaultImpl() {
       return Stub.Proxy.sDefaultImpl;
     }
   }
   public ChannelResult invokeMethod(ChannelArgument rpcArgument) throws android.os.RemoteException;
   public void registerCallbackChannel(String process, ChannelBinder channel) throws android.os.RemoteException;
-//  public ParcelableResult invokeCallbackMethod(IPCallbackMethod ipcMethod) throws android.os.RemoteException;
-  public void unRegisterCallbackMethod(java.lang.String fromProcess, java.lang.String methodId) throws android.os.RemoteException;
 }

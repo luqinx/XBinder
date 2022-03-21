@@ -70,26 +70,33 @@ internal object ChannelProvider {
             val result = ChannelResult()
             result.succeed = true
             val clazzImpl: IBinderService?
-            if (rpcArgument.method == CORE_METHOD_NEW_CONSTRUCTOR) {
-                rpcArgument.run {
-                    val start = System.currentTimeMillis()
-                    clazzImpl = ServiceProvider.doFind(
-                        fromProcess,
-                        delegateId,
-                        clazz.toClass()!!,
-                        genericArgTypes,
-                        args
-                    )
-                    result.value = clazzImpl != null
-                    result.invokeConsumer = System.currentTimeMillis() - start
+            when (rpcArgument.method) {
+                CORE_METHOD_UNREGISTER_INSTANCE -> {
+                    ServiceProvider.unregisterServiceInstance(rpcArgument.fromProcess, rpcArgument.instanceId!!)
                     return result
                 }
-            } else {
-                rpcArgument.run {
-                    clazzImpl = if (instanceId != null) {
-                        ServiceProvider.getServiceInstance(instanceId!!)
-                    } else {
-                        ServiceProvider.getServiceImpl(fromProcess, delegateId)
+                CORE_METHOD_NEW_CONSTRUCTOR -> {
+                    rpcArgument.run {
+                        val start = System.currentTimeMillis()
+                        clazzImpl = ServiceProvider.doFind(
+                            fromProcess,
+                            delegateId,
+                            clazz.toClass()!!,
+                            genericArgTypes,
+                            args
+                        )
+                        result.value = clazzImpl != null
+                        result.invokeConsumer = System.currentTimeMillis() - start
+                        return result
+                    }
+                }
+                else -> {
+                    rpcArgument.run {
+                        clazzImpl = if (instanceId != null) {
+                            ServiceProvider.getServiceInstance(fromProcess, instanceId!!)
+                        } else {
+                            ServiceProvider.getServiceImpl(fromProcess, delegateId)
+                        }
                     }
                 }
             }
@@ -124,10 +131,6 @@ internal object ChannelProvider {
 
         override fun registerCallbackChannel(process: String, channelBinder: ChannelBinder) {
             addBinderChannel(process, channelBinder)
-        }
-
-        override fun unRegisterCallbackMethod(fromProcess: String, methodId: String) {
-//            ServiceStore.unregisterMethodCallback(fromProcess, methodId)
         }
     }
 }

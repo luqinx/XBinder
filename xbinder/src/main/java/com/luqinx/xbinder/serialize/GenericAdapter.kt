@@ -40,9 +40,9 @@ object GenericAdapter: ParcelAdapter<Type> {
         return type
     }
 
-    override fun handles(type: Type): Boolean {
-        return type is Class<*> || type is ParameterizedType || type is GenericArrayType
-    }
+//    override fun handles(type: Type): Boolean {
+//        return type is Class<*> || type is ParameterizedType || type is GenericArrayType
+//    }
 
     override fun writeInstance(parcel: Parcel, value: Type?, component: Type) {
         parcel.writeInt(component.int())

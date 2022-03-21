@@ -82,9 +82,9 @@ object PrimitiveAdapter: ParcelAdapter<Any> {
         }
     }
 
-    override fun handles(type: Type): Boolean {
-        return primitives[type] != null
-    }
+//    override fun handles(type: Type): Boolean {
+//        return primitives[type] != null
+//    }
 
     internal object Primitives {
         internal const val byte = 0

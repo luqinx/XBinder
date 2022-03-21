@@ -17,7 +17,10 @@ object ServiceAdapter: ParcelAdapter<IBinderService> {
         val process = parcel.readString()!!
         val serviceClazz = GenericAdapter.readInstance(parcel, component) as Class<IBinderService>
 
-        return ServiceProvider.getServiceInstance(instanceId) // don't create proxy if in local
+        return ServiceProvider.getServiceInstance(
+            XBinder.currentProcessName(),
+            instanceId,
+        ) // don't create proxy if in local
             ?: ServiceProxyFactory.newCallbackProxy(
                 NewCallbackOptions(
                     serviceClazz,
@@ -38,13 +41,10 @@ object ServiceAdapter: ParcelAdapter<IBinderService> {
             parcel.writeString(instanceId)
             parcel.writeString(XBinder.currentProcessName())
             GenericAdapter.writeInstance(parcel, component, component)
-            ServiceProvider.registerServiceInstance(instanceId, this)
+            ServiceProvider.registerServiceInstance(BinderInvoker.invokeProcess(), instanceId, this)
         } ?: run {
             parcel.writeInt(-1)
         }
     }
 
-    override fun handles(type: Type): Boolean {
-        TODO("Not yet implemented")
-    }
 }

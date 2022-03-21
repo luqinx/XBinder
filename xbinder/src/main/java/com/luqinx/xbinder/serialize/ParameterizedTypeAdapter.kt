@@ -48,8 +48,8 @@ internal object ParameterizedTypeAdapter: ParcelAdapter<ParameterizedType> {
 
     }
 
-    override fun handles(type: Type): Boolean {
-        return type == ParameterizedType::class.java
-    }
+//    override fun handles(type: Type): Boolean {
+//        return type == ParameterizedType::class.java
+//    }
 
 }

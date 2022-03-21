@@ -11,9 +11,9 @@ import java.lang.reflect.Type
  */
 object ObjectAdapter: ParcelAdapter<Any> {
 
-    override fun handles(type: Type): Boolean {
-        return true
-    }
+//    override fun handles(type: Type): Boolean {
+//        return true
+//    }
 
     override fun writeInstance(parcel: Parcel, value: Any?, component: Type) {
         parcel.writeValue(value)

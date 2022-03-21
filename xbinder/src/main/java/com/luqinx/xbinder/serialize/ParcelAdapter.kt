@@ -1,7 +1,6 @@
 package com.luqinx.xbinder.serialize
 
 import android.os.Parcel
-import com.luqinx.xbinder.IBinderService
 import com.luqinx.xbinder.classloader
 import com.luqinx.xbinder.exceptionHandler
 import java.lang.reflect.GenericArrayType
@@ -60,21 +59,15 @@ interface ParcelAdapter<T: Any> {
         types: Array<out Type?>
     ): Array<Any?>? {
         val arrayType: Type?
-        return when(val size = parcel.readInt()) {
-            -1 -> null
-            0 -> {
-                arrayType = GenericAdapter.readInstance(parcel, types.javaClass.componentType!!)
-                arrayType!!.newArrayInstance(0)!!
+        val size = parcel.readInt()
+        return if (size >= 0) {
+            arrayType = GenericAdapter.readInstance(parcel, types.javaClass.componentType!!)
+            val array = arrayType!!.newArrayInstance<Any>(size)!!
+            for (i in 0 until size) {
+                array[i] = read(parcel, types[i]!!)
             }
-            else -> {
-                arrayType = GenericAdapter.readInstance(parcel, types.javaClass.componentType!!)
-                val array = arrayType!!.newArrayInstance<Any>(size)!!
-                for (i in 0 until size) {
-                    array[i] = read(parcel, types[i]!!)
-                }
-                array
-            }
-        }
+            array
+        } else null
     }
 
     fun readClassArray(
@@ -128,16 +121,14 @@ interface ParcelAdapter<T: Any> {
             GenericAdapter.writeInstance(parcel, component, component)
             val adapter = AdapterManager.getAdapter(component, basicComponent) as ParcelAdapter<Any>?
             adapter?.apply {
-                if (component.isArray()) {
-                    this.writeArray(parcel, value as Array<Any?>?, basicComponent as Array<Type>)
+                if (basicComponent.isClassArray()) {
+                    this.writeClassArray(parcel, value as Array<*>?, basicComponent as Class<*>)
+                } else if (basicComponent.isGenericArray()) {
+                    this.writeGenericArray(parcel, value as Array<*>?, basicComponent as GenericArrayType)
                 } else {
-                    this.writeInstance(parcel, value, basicComponent)
+                        this.writeInstance(parcel, value, basicComponent)
                 }
             } ?: run {
-//                if (IBinderService::class.java.isAssignableFrom(basicComponent as Class<*>)) {
-//                    ServiceAdapter.write
-//                    return
-//                }
                 parcel.writeValue(value)
             }
         } catch (e: Throwable) {
@@ -148,16 +139,8 @@ interface ParcelAdapter<T: Any> {
     fun writeInstance(parcel: Parcel, value: T?, component: Type)
 
     fun writeArray(parcel: Parcel, values: Array<*>?, types: Array<out Type?>) {
-        when {
-            values == null -> parcel.writeInt(-1)
-            types.isEmpty() -> {
-                parcel.writeInt(0)
-                GenericAdapter.writeInstance(
-                    parcel,
-                    values.javaClass.componentType,
-                    values.javaClass.componentType!!
-                )
-            }
+        when (values) {
+            null -> parcel.writeInt(-1)
             else -> {
                 parcel.writeInt(types.size)
                 GenericAdapter.writeInstance(
@@ -172,7 +155,7 @@ interface ParcelAdapter<T: Any> {
         }
     }
 
-    fun writeClassArray(parcel: Parcel, arrayType: Class<*>, array: Array<*>?) {
+    fun writeClassArray(parcel: Parcel, array: Array<*>?, arrayType: Class<*>) {
         val size = array?.size ?: -1
         if (size >= 0) {
             parcel.writeInt(size)
@@ -187,8 +170,8 @@ interface ParcelAdapter<T: Any> {
 
     fun writeGenericArray(
         parcel: Parcel,
-        component: GenericArrayType,
-        array: Array<out Any?>?
+        array: Array<out Any?>?,
+        component: GenericArrayType
     ) {
         val size = array?.size ?: -1
         if (size >= 0) {
@@ -215,5 +198,4 @@ interface ParcelAdapter<T: Any> {
 //        }
 //    }
 
-    fun handles(type: Type): Boolean
 }

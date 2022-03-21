@@ -16,7 +16,7 @@ import java.lang.reflect.Type
  *
  * @since 2022/1/2
  */
-internal class ChannelArgument() : Parcelable {
+internal class ChannelArgument() {
 
     @JvmField
     internal var onewayCall = false
@@ -76,7 +76,7 @@ internal class ChannelArgument() : Parcelable {
         Refined.finish("$method readParcel")
     }
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
+    fun writeToParcel(parcel: Parcel, flags: Int) {
         Refined.start()
         parcel.writeString(XBinder.currentProcessName())
         parcel.writeString(clazz)
@@ -107,17 +107,7 @@ internal class ChannelArgument() : Parcelable {
         Refined.finish("$method writeToParcel")
     }
 
-    override fun describeContents(): Int {
+    fun describeContents(): Int {
         return 0
-    }
-
-    companion object CREATOR : Parcelable.Creator<ChannelArgument> {
-        override fun createFromParcel(parcel: Parcel): ChannelArgument {
-            return ChannelArgument(parcel)
-        }
-
-        override fun newArray(size: Int): Array<ChannelArgument?> {
-            return arrayOfNulls(size)
-        }
     }
 }

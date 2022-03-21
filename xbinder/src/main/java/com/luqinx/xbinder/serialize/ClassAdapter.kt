@@ -79,9 +79,9 @@ internal object ClassAdapter: ParcelAdapter<Class<*>> {
         }
     }
 
-    override fun handles(type: Type): Boolean {
-        return type == Class::class.java
-    }
+//    override fun handles(type: Type): Boolean {
+//        return type == Class::class.java
+//    }
 }
 
 

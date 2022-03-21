@@ -12,5 +12,9 @@ interface CallbackService: IBinderService,IService {
     fun registerCallback(callback: Callback)
     fun unregisterCallback(callback: Callback)
 
-    fun invokeCallback(callback: Callback)
+    fun invokeCallback(callback: Callback?)
+    fun invokeCallbacks(callbacks: Array<Callback>)
+    fun invokeObjects(objs: Array<Any?>)
+
+    fun remoteGc()
 }

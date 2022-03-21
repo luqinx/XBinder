@@ -6,7 +6,7 @@ internal object ServiceProvider {
 
     private val serviceImplCache = hashMapOf<String, SparseArray<IBinderService>>()
 
-    private val instanceCache = hashMapOf<String, IBinderService>()
+    private val instanceCache = hashMapOf<String, HashMap<String,IBinderService>>()
 
     fun doFind(
         fromProcess: String,
@@ -40,21 +40,29 @@ internal object ServiceProvider {
         }
     }
 
-    fun registerServiceInstance(instanceId: String, instance: IBinderService) {
+    fun registerServiceInstance(fromProcess: String, instanceId: String, instance: IBinderService) {
         synchronized(instanceCache) {
-            instanceCache[instanceId] = instance
+            instanceCache[fromProcess]?.apply {
+                this[instanceId] = instance
+            } ?: run {
+                 instanceCache[fromProcess] = hashMapOf(
+                     instanceId to instance
+                 )
+            }
         }
     }
 
-    fun unregisterServiceInstance(instanceId: String) {
+    fun unregisterServiceInstance(fromProcess: String, instanceId: String) {
+
         synchronized(instanceCache) {
-            instanceCache.remove(instanceId)
+            instanceCache[fromProcess]?.remove(instanceId)
         }
+        logger.d(message = "unregisterServiceInstance(${fromProcess}): $instanceId ")
     }
 
-    fun getServiceInstance(instanceId: String): IBinderService? {
+    fun getServiceInstance(fromProcess: String, instanceId: String): IBinderService? {
         synchronized(instanceCache) {
-            return instanceCache[instanceId]
+            return instanceCache[fromProcess]?.get(instanceId)
         }
     }
 
@@ -65,6 +73,9 @@ internal object ServiceProvider {
     fun onBinderDeath(process: String) {
         synchronized(serviceImplCache) {
             serviceImplCache.remove(process)
+        }
+        synchronized(instanceCache) {
+            instanceCache.remove(process)
         }
     }
 }

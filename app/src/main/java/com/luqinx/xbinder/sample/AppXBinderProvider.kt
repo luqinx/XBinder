@@ -12,7 +12,7 @@ class AppXBinderProvider: XBinderProvider() {
 
     override fun onInitOptions(context: Context?): XBinderInitOptions {
         val options = XBinderInitOptions()
-        options.debuggable = false
+        options.debuggable = true
         options.invokeThreshold = XBinderInitOptions.INVOKE_THRESHOLD_FORCE_ENABLE
         options.logger = ILogger.SimpleLogger
 

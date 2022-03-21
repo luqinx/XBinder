@@ -10,4 +10,6 @@ import com.luqinx.xbinder.IBinderService
  */
 interface BinderTypeService: IBinderService {
     fun getOnewayBinder(): IBinder
+
+    fun newOnewayBinder(): IBinder
 }

@@ -103,11 +103,11 @@ object XBinder {
             if (invokeType_ == InvokeType.REMOTE_ONLY) {
                 throw java.lang.IllegalArgumentException("check your process name please")
             }
-             InvokeType.LOCAL_ONLY
+            InvokeType.LOCAL_ONLY
         } else {
             invokeType_
         }
-        return ServiceFactory.newService(
+        return ServiceProxyFactory.newServiceProxy(
             NewServiceOptions(serviceClass, realProcessName)
                 .constructorTypes(constructorTypes)
                 .constructorArgs(constructorArgs)

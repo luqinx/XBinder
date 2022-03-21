@@ -1,5 +1,6 @@
 package com.luqinx.xbinder.serialize
 
+import com.luqinx.xbinder.IBinderService
 import java.lang.reflect.GenericArrayType
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
@@ -38,6 +39,7 @@ internal object AdapterManager {
         register(Float::class.java, PrimitiveAdapter) // for multi-dimensional float array
         register(Double::class.java, PrimitiveAdapter) // for multi-dimensional double array
         register(Boolean::class.java, PrimitiveAdapter) // for multi-dimensional boolean array
+        register(IBinderService::class.java, ServiceAdapter)
         register(Any::class.java, ObjectAdapter)
     }
 
@@ -52,12 +54,15 @@ internal object AdapterManager {
         adapterMap.remove(type)
     }
 
-    fun getAdapter(type: Type): ParcelAdapter<*>? {
+    fun getAdapter(type: Type, basicComponent: Type): ParcelAdapter<*>? {
         if (isInWhitList(type)) {
             return null
         }
         if  (type.rawType() == List::class.java && type.actualTypeArguments()!![0] in whiteList) {
             return null
+        }
+        if (basicComponent is Class<*> && IBinderService::class.java.isAssignableFrom(basicComponent)) {
+            return ServiceAdapter
         }
         return adapterMap[type] ?: adapterMap[type.rawType()]
     }

@@ -1,7 +1,6 @@
 package com.luqinx.xbinder.serialize
 
 import android.os.Parcel
-import com.luqinx.xbinder.exceptionHandler
 import java.lang.reflect.GenericArrayType
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
@@ -20,16 +19,16 @@ object GenericAdapter: ParcelAdapter<Type> {
     private const val GENERIC_ARRAY_TYPE = 2
 
     override fun readInstance(
+        parcel: Parcel,
         component: Type,
-        parcel: Parcel
     ): Type? {
         var type: Type? = null
         when (parcel.readInt()) {
             CLASS_TYPE -> {
-                type = ClassAdapter.readInstance(component, parcel)
+                type = ClassAdapter.readInstance(parcel, component)
             }
             PARAMETERIZED_TYPE -> {
-                type = ParameterizedTypeAdapter.readInstance(component, parcel)
+                type = ParameterizedTypeAdapter.readInstance(parcel, component)
             }
             GENERIC_ARRAY_TYPE -> {
 
@@ -45,14 +44,18 @@ object GenericAdapter: ParcelAdapter<Type> {
         return type is Class<*> || type is ParameterizedType || type is GenericArrayType
     }
 
-    override fun writeInstance(value: Type?, component: Type, parcel: Parcel) {
+    override fun writeInstance(parcel: Parcel, value: Type?, component: Type) {
         parcel.writeInt(component.int())
         when (component) {
             is Class<*> -> {
-                ClassAdapter.writeInstance(value as Class<*>?, component, parcel)
+                ClassAdapter.writeInstance(parcel, value as Class<*>?, component)
             }
             is ParameterizedType -> {
-                ParameterizedTypeAdapter.writeInstance(value as ParameterizedType?, component, parcel)
+                ParameterizedTypeAdapter.writeInstance(
+                    parcel,
+                    value as ParameterizedType?,
+                    component
+                )
             }
             is GenericArrayType -> {
 

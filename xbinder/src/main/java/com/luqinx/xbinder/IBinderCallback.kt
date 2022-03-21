@@ -7,6 +7,6 @@ import androidx.lifecycle.LifecycleOwner
  *
  * @since 2022/2/20
  */
-interface IBinderCallback {
+interface IBinderCallback: IBinderService {
     fun getLifecycleOwner(): LifecycleOwner? = null
 }

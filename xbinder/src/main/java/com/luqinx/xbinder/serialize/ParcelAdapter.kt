@@ -1,6 +1,7 @@
 package com.luqinx.xbinder.serialize
 
 import android.os.Parcel
+import com.luqinx.xbinder.IBinderService
 import com.luqinx.xbinder.classloader
 import com.luqinx.xbinder.exceptionHandler
 import java.lang.reflect.GenericArrayType
@@ -25,21 +26,21 @@ interface ParcelAdapter<T: Any> {
      *  if the target type is a [java.lang.reflect.ParameterizedType], the rawType is the raw
      *  if the target type is a [GenericArrayType], the rawType is the generic component type of [GenericArrayType]
      */
-    fun read(component: Type, parcel: Parcel): Any? {
+    fun read(parcel: Parcel, component: Type): Any? {
         try {
-            GenericAdapter.readInstance(component, parcel)?.apply {
-                val adapter = AdapterManager.getAdapter(this) as ParcelAdapter?
+            GenericAdapter.readInstance(parcel, component)?.apply {
+                val adapter = AdapterManager.getAdapter(this, component)
 
                 adapter?.also {
                     return when {
                         this.isClassArray() -> {
-                            it.readArray(this as Class<*>, parcel)
+                            it.readClassArray(parcel, this as Class<*>)
                         }
                         this.isGenericArray() -> {
-                            it.readGenericArray(this as GenericArrayType, parcel) 
+                            it.readGenericArray(parcel, this as GenericArrayType)
                         }
                         else -> {
-                            it.readInstance(this, parcel) 
+                            it.readInstance(parcel, this)
                         }
                     }
                 } ?: run {
@@ -52,12 +53,33 @@ interface ParcelAdapter<T: Any> {
         return null
     }
 
-    fun readInstance(component: Type, parcel: Parcel): T?
-
+    fun readInstance(parcel: Parcel, component: Type): T?
 
     fun readArray(
-        type: Class<*>,
-        parcel: Parcel
+        parcel: Parcel,
+        types: Array<out Type?>
+    ): Array<Any?>? {
+        val arrayType: Type?
+        return when(val size = parcel.readInt()) {
+            -1 -> null
+            0 -> {
+                arrayType = GenericAdapter.readInstance(parcel, types.javaClass.componentType!!)
+                arrayType!!.newArrayInstance(0)!!
+            }
+            else -> {
+                arrayType = GenericAdapter.readInstance(parcel, types.javaClass.componentType!!)
+                val array = arrayType!!.newArrayInstance<Any>(size)!!
+                for (i in 0 until size) {
+                    array[i] = read(parcel, types[i]!!)
+                }
+                array
+            }
+        }
+    }
+
+    fun readClassArray(
+        parcel: Parcel,
+        type: Class<*>
     ): Array<Any?>? {
         val size = parcel.readInt()
         val array: Array<Any?>?
@@ -65,7 +87,7 @@ interface ParcelAdapter<T: Any> {
             val componentType = type.componentType!!
             array = componentType.newArrayInstance(size)!!
             for (i in 0 until size) {
-                array[i] = read(componentType, parcel = parcel)
+                array[i] = read(parcel, componentType)
             }
         }  else {
             array = null
@@ -74,15 +96,15 @@ interface ParcelAdapter<T: Any> {
     }
 
     fun readGenericArray(
-        type: GenericArrayType,
-        parcel: Parcel
+        parcel: Parcel,
+        type: GenericArrayType
     ): Array<Any?>? {
         val size = parcel.readInt()
         val array: Array<Any?>?
         if (size >= 0) {
             array = type.newArrayInstance(size)
             for (i in 0 until size) {
-                array?.set(i, read(type.genericComponentType, parcel))
+                array?.set(i, read(parcel, type))
             }
         } else {
             array = null
@@ -100,23 +122,22 @@ interface ParcelAdapter<T: Any> {
      *  if the target type is a [java.lang.reflect.ParameterizedType], the rawType is the raw
      *  if the target type is a [GenericArrayType], the component is the generic component type of [GenericArrayType]
      */
-    fun write(value: Any?, component: Type, parcel: Parcel) {
+    fun write(parcel: Parcel, value: Any?, basicComponent: Type) {
         try {
-            GenericAdapter.writeInstance(component, component, parcel)
-            val adapter = AdapterManager.getAdapter(component) as ParcelAdapter<Any>?
+            val component = value?.javaClass ?: basicComponent
+            GenericAdapter.writeInstance(parcel, component, component)
+            val adapter = AdapterManager.getAdapter(component, basicComponent) as ParcelAdapter<Any>?
             adapter?.apply {
-                when  {
-                    component.isClassArray() -> {
-                        this.writeArray(component as Class<*>, value as Array<Any?>?, parcel)
-                    }
-                    component.isGenericArray() -> {
-                        this.writeGenericArray(component as GenericArrayType, value as Array<Any?>?, parcel)
-                    }
-                    else -> {
-                        this.writeInstance(value, component, parcel)
-                    }
+                if (component.isArray()) {
+                    this.writeArray(parcel, value as Array<Any?>?, basicComponent as Array<Type>)
+                } else {
+                    this.writeInstance(parcel, value, basicComponent)
                 }
             } ?: run {
+//                if (IBinderService::class.java.isAssignableFrom(basicComponent as Class<*>)) {
+//                    ServiceAdapter.write
+//                    return
+//                }
                 parcel.writeValue(value)
             }
         } catch (e: Throwable) {
@@ -124,28 +145,57 @@ interface ParcelAdapter<T: Any> {
         }
     }
 
-    fun writeInstance(value: T?, component: Type, parcel: Parcel)
+    fun writeInstance(parcel: Parcel, value: T?, component: Type)
 
-    fun writeArray(arrayType: Class<*>, array: Array<out Any?>?, parcel: Parcel) {
+    fun writeArray(parcel: Parcel, values: Array<*>?, types: Array<out Type?>) {
+        when {
+            values == null -> parcel.writeInt(-1)
+            types.isEmpty() -> {
+                parcel.writeInt(0)
+                GenericAdapter.writeInstance(
+                    parcel,
+                    values.javaClass.componentType,
+                    values.javaClass.componentType!!
+                )
+            }
+            else -> {
+                parcel.writeInt(types.size)
+                GenericAdapter.writeInstance(
+                    parcel,
+                    values.javaClass.componentType,
+                    values.javaClass.componentType!!
+                )
+                for (i in types.indices) {
+                    write(parcel, values[i], types[i] ?: Type::class.java)
+                }
+            }
+        }
+    }
+
+    fun writeClassArray(parcel: Parcel, arrayType: Class<*>, array: Array<*>?) {
         val size = array?.size ?: -1
         if (size >= 0) {
             parcel.writeInt(size)
             for (i in 0 until size) {
-                val type = array?.get(i)?.javaClass?.componentType() ?: arrayType.componentType
-                write(array?.get(i), type, parcel)
+//                val type = array?.get(i)?.javaClass?.componentType() ?: arrayType.componentType
+                write(parcel, array?.get(i), arrayType.componentType as Type)
             }
         } else {
             parcel.writeInt(-1)
         }
     }
 
-    fun writeGenericArray(component: GenericArrayType, array: Array<out Any?>?, parcel: Parcel) {
+    fun writeGenericArray(
+        parcel: Parcel,
+        component: GenericArrayType,
+        array: Array<out Any?>?
+    ) {
         val size = array?.size ?: -1
         if (size >= 0) {
             parcel.writeInt(size)
             for (i in 0 until size) {
                 val type = array?.get(i)?.javaClass?.componentType() ?: component.genericComponentType
-                write(array?.get(i), type, parcel)
+                write(parcel, array?.get(i), type)
             }
         } else {
             parcel.writeInt(-1)

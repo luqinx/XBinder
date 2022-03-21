@@ -15,11 +15,11 @@ object ObjectAdapter: ParcelAdapter<Any> {
         return true
     }
 
-    override fun writeInstance(value: Any?, component: Type, parcel: Parcel) {
+    override fun writeInstance(parcel: Parcel, value: Any?, component: Type) {
         parcel.writeValue(value)
     }
 
-    override fun readInstance(component: Type, parcel: Parcel): Any? {
+    override fun readInstance(parcel: Parcel, component: Type): Any? {
         return parcel.readValue(classloader)
     }
 

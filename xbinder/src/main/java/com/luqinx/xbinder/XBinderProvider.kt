@@ -13,7 +13,7 @@ import android.os.Bundle
 import android.os.IBinder
 import android.os.Process
 import android.text.TextUtils
-import com.luqinx.xbinder.BinderChannelProvider.coreChannel
+import com.luqinx.xbinder.ChannelProvider.coreChannel
 import com.luqinx.xbinder.serialize.ClassAdapter
 import com.luqinx.xbinder.serialize.ParcelAdapter
 

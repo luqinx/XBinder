@@ -1,7 +1,6 @@
 package com.luqinx.xbinder
 
 import androidx.annotation.Keep
-import java.lang.reflect.Type
 
 /**
  *
@@ -22,6 +21,14 @@ interface IProxyBehaviors {
      *  create remote service
      */
     @JvmDefault fun `_$newConstructor_`(consTypes: Array<*>?, consArgs: Array<*>?): Boolean = false
+
+    /**
+     *  !!! don't override this method
+     *  it's will be intercepted by proxy
+     *
+     *  @return return true if origin process is dead
+     */
+    @JvmDefault fun `_$bindCallbackProxy_`(instanceId: String): Boolean = false
 
     /**
      *  !!! don't override this method

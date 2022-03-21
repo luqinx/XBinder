@@ -1,6 +1,5 @@
 package com.luqinx.xbinder.sample
 
-import android.os.AsyncTask
 import android.os.SystemClock
 import android.view.View
 import android.widget.AdapterView
@@ -8,7 +7,6 @@ import chao.app.ami.base.AmiSimpleListFragment
 import com.luqinx.xbinder.sample.aidl.Oneway
 import com.luqinx.xbinder.sample.async.AsyncCallService
 import com.luqinx.xbinder.sample.simple.BinderTypeService
-import java.util.concurrent.Executors
 
 /**
  * @author  qinchao
@@ -60,18 +58,25 @@ class TestAsyncOnewayFragment : AmiSimpleListFragment() {
             }
             5 -> {
 
-                repeat(50) {
-                    Executors.newFixedThreadPool(40).execute {
-                        caller.onewayCall()
-                        caller.normalCall()
-//                        aidlCaller.normalCall()
-//                        aidlCaller.onewayCall()
-                    }
-                }
+//                repeat(50) {
+//                    Executors.newFixedThreadPool(40).execute {
+//                        caller.onewayCall()
+//                        caller.normalCall()
+////                        aidlCaller.normalCall()
+////                        aidlCaller.onewayCall()
+//                    }
+//                }
 //                UI.show(context, TestBinderArgumentFragment::class.java)
+
+                repeat(10000) {
+                    val binder = Oneway.Stub.asInterface(onewayCallerBinder.newOnewayBinder())
+                    binders.add(binder)
+                }
             }
         }
     }
+
+    val binders = arrayListOf<Oneway>()
 
     override fun getObjects(): Any {
         return arrayOf(

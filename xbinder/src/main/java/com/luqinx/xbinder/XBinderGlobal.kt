@@ -15,6 +15,9 @@ import java.util.*
 
 internal const val CORE_METHOD_NEW_CONSTRUCTOR = "_\$newConstructor_"
 
+internal const val CORE_METHOD_BIND_CALLBACK_PROXY = "_\$bindCallbackProxy_"
+
+
 internal lateinit var context: Context
 
 internal val thisProcess by lazy { XBinderProvider.processName }

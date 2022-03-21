@@ -57,9 +57,9 @@ fun getRawType(type: Type): Type {
 
 const val CLASS_TYPE = 0
 
-const val PARAMETERIZED_TYPE = 1
+const val PARAMETERIZED_TYPE = 2
 
-const val GENERIC_ARRAY_TYPE = 2
+const val GENERIC_ARRAY_TYPE = 3
 
 fun Type.int(): Int {
     return when (this) {

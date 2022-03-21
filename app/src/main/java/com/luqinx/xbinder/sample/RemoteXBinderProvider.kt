@@ -1,11 +1,16 @@
 package com.luqinx.xbinder.sample
 
 import android.content.Context
+import chao.android.tools.servicepool.Spa
+import chao.java.tools.servicepool.IService
 import com.luqinx.xbinder.*
 import com.luqinx.xbinder.sample.async.AsyncCallJavaService
 import com.luqinx.xbinder.sample.async.AsyncCallService
 import com.luqinx.xbinder.sample.async.impl.AsyncCallJavaServiceImpl
 import com.luqinx.xbinder.sample.async.impl.AsyncCallServiceImpl
+import com.luqinx.xbinder.sample.callback.CallbackService
+import com.luqinx.xbinder.sample.callback.CallbackServiceFragment
+import com.luqinx.xbinder.sample.callback.CallbackServiceImpl
 import com.luqinx.xbinder.sample.simple.*
 
 /**
@@ -27,7 +32,7 @@ class RemoteXBinderProvider: XBinderProvider() {
                 clazz: Class<*>,
                 consTypes: Array<*>?,
                 constArgs: Array<*>?
-            ): IBinderService? {
+            ): IBinderService {
                 return when (clazz) {
                     PrimitiveTypeService::class.java -> PrimitiveTypeServiceImpl()
                     PrimitiveArrayTypeService::class.java -> PrimitiveArrayTypeServiceImpl()
@@ -35,7 +40,10 @@ class RemoteXBinderProvider: XBinderProvider() {
                     AsyncCallJavaService::class.java -> AsyncCallJavaServiceImpl()
                     BinderTypeService::class.java -> BinderTypeServiceImpl()
                     PrimitiveBoxArrayTypeService::class.java -> PrimitiveBoxArrayTypeServiceImpl()
-                    else -> null
+                    CallbackService::class.java -> CallbackServiceImpl()
+                    else -> {
+                        Spa.getService(clazz as Class<IService>) as IBinderService
+                    }
                 }
             }
         })

@@ -1,7 +1,6 @@
 package com.luqinx.xbinder.serialize
 
 import android.os.Parcel
-import java.lang.IllegalStateException
 import java.lang.reflect.Type
 
 /**
@@ -26,9 +25,9 @@ object PrimitiveAdapter: ParcelAdapter<Any> {
     )
 
     override fun readInstance(
+        parcel: Parcel,
         component: Type,
-        parcel: Parcel
-    ): Any? {
+    ): Any {
         checkPrimitiveType(component)
         return when (component) {
             Byte::class.java -> {
@@ -61,9 +60,9 @@ object PrimitiveAdapter: ParcelAdapter<Any> {
         }
     }
 
-    override fun writeInstance(value: Any?, component: Type, parcel: Parcel) {
+    override fun writeInstance(parcel: Parcel, value: Any?, component: Type) {
         checkPrimitiveType(component)
-//        parcel.writeInt(primitives.getValue(type))
+//        parcel.writeInt(primitives.getValue(component))
         if (value == null) {
             parcel.writeInt(0)
             return

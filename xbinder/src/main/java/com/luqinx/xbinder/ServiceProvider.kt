@@ -6,6 +6,7 @@ internal object ServiceProvider {
 
     private val serviceImplCache = hashMapOf<String, SparseArray<IBinderService>>()
 
+    private val instanceCache = hashMapOf<String, IBinderService>()
 
     fun doFind(
         fromProcess: String,
@@ -36,6 +37,24 @@ internal object ServiceProvider {
                 }
             }
             return remoteService
+        }
+    }
+
+    fun registerServiceInstance(instanceId: String, instance: IBinderService) {
+        synchronized(instanceCache) {
+            instanceCache[instanceId] = instance
+        }
+    }
+
+    fun unregisterServiceInstance(instanceId: String) {
+        synchronized(instanceCache) {
+            instanceCache.remove(instanceId)
+        }
+    }
+
+    fun getServiceInstance(instanceId: String): IBinderService? {
+        synchronized(instanceCache) {
+            return instanceCache[instanceId]
         }
     }
 

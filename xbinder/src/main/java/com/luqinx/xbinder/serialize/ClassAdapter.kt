@@ -57,8 +57,8 @@ internal object ClassAdapter: ParcelAdapter<Class<*>> {
     }
 
     override fun readInstance(
+        parcel: Parcel,
         component: Type,
-        parcel: Parcel
     ): Class<*>? {
         if (parcel.readInt() == 0) {
             return null
@@ -68,7 +68,11 @@ internal object ClassAdapter: ParcelAdapter<Class<*>> {
 
     }
 
-    override fun writeInstance(value: Class<*>?, component: Type, parcel: Parcel) {
+    override fun writeInstance(
+        parcel: Parcel,
+        value: Class<*>?,
+        component: Type
+    ) {
         if (value == null) parcel.writeInt(0) else {
             parcel.writeInt(1)
             parcel.writeString(value.name ?: "")

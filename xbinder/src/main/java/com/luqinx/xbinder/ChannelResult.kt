@@ -8,7 +8,7 @@ import android.os.Parcelable
  *
  * @since 2022/1/2
  */
-class ChannelMethodResult() : Parcelable {
+class ChannelResult() : Parcelable {
 
     var succeed: Boolean = false
 
@@ -38,12 +38,12 @@ class ChannelMethodResult() : Parcelable {
         return 0
     }
 
-    companion object CREATOR : Parcelable.Creator<ChannelMethodResult> {
-        override fun createFromParcel(parcel: Parcel): ChannelMethodResult {
-            return ChannelMethodResult(parcel)
+    companion object CREATOR : Parcelable.Creator<ChannelResult> {
+        override fun createFromParcel(parcel: Parcel): ChannelResult {
+            return ChannelResult(parcel)
         }
 
-        override fun newArray(size: Int): Array<ChannelMethodResult?> {
+        override fun newArray(size: Int): Array<ChannelResult?> {
             return arrayOfNulls(size)
         }
     }

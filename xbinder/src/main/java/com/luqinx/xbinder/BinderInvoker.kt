@@ -16,12 +16,12 @@ internal object BinderInvoker {
 
     fun invokeMethod(
         processName: String,
-        rpcArgument: ChannelMethodArgument,
+        rpcArgument: ChannelArgument,
         localInvokeAfterRemoteMissing: Boolean
     ): Any? {
         val start = System.currentTimeMillis()
         var callSuccess = false
-        val coreService = BinderChannelProvider.getBinderChannel(processName)
+        val coreService = ChannelProvider.getBinderChannel(processName)
         var consumer = 0L
         try {
             coreService?.invokeMethod(rpcArgument)?.apply {
@@ -65,7 +65,7 @@ internal object BinderInvoker {
 
     fun dispatchBinderDeath(process: String) {
         logger.w(message = "process has dead: $process")
-        BinderChannelProvider.onBinderDeath(process)
+        ChannelProvider.onBinderDeath(process)
 //        CallbacksWatcher.onBinderDeath(process)
 //        ServiceStore.onBinderDeath(process)
         ServiceProvider.onBinderDeath(process)

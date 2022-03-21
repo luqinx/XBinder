@@ -9,19 +9,19 @@ import com.luqinx.xbinder.serialize.toClass
  *
  * @since 2022/2/21
  */
-internal object BinderChannelProvider {
+internal object ChannelProvider {
 
-    private val BINDER_CHANNEL_MAP: MutableMap<String, BinderChannel> = mutableMapOf()
+    private val CHANNEL_BINDER_MAP: MutableMap<String, ChannelBinder> = mutableMapOf()
 
-    fun getBinderChannel(process: String): BinderChannel? {
-        return BINDER_CHANNEL_MAP[process] ?: synchronized(BINDER_CHANNEL_MAP) {
+    fun getBinderChannel(process: String): ChannelBinder? {
+        return CHANNEL_BINDER_MAP[process] ?: synchronized(CHANNEL_BINDER_MAP) {
             // double check
-            BINDER_CHANNEL_MAP[process] ?: let {
+            CHANNEL_BINDER_MAP[process] ?: let {
 
                 val start = System.currentTimeMillis()
                 val uri = Uri.parse("content://$process")
                 val cursor = context.contentResolver.query(uri, null, null, null, null)
-                var binderChannel: BinderChannel? = null
+                var channelBinder: ChannelBinder? = null
                 cursor?.apply {
                     extras.classLoader = classloader
                     val binderWrapper =
@@ -31,56 +31,66 @@ internal object BinderChannelProvider {
                         binder.linkToDeath({
                             BinderInvoker.dispatchBinderDeath(process)
                         }, 0)
-                        val service: BinderChannel =
-                            BinderChannel.Stub.asInterface(getBinder())
-                        BINDER_CHANNEL_MAP[process] = service
-                        binderChannel = service
-                        binderChannel!!.registerCallbackChannel(XBinder.currentProcessName(),
+                        val service: ChannelBinder =
+                            ChannelBinder.Stub.asInterface(getBinder())
+                        CHANNEL_BINDER_MAP[process] = service
+                        channelBinder = service
+                        channelBinder!!.registerCallbackChannel(XBinder.currentProcessName(),
                             coreChannel
                         )
                     }
                     close()
                 }
-                logger.d(message = "query provider ${binderChannel?.javaClass} spent ${System.currentTimeMillis() - start}ms")
-                return binderChannel
+                logger.d(message = "query provider ${channelBinder?.javaClass} spent ${System.currentTimeMillis() - start}ms")
+                return channelBinder
             }
         }
     }
 
-    fun addBinderChannel(process: String, channel: BinderChannel) {
-        synchronized(BINDER_CHANNEL_MAP) {
-            BINDER_CHANNEL_MAP[process] = channel
+    fun addBinderChannel(process: String, channelBinder: ChannelBinder) {
+        synchronized(CHANNEL_BINDER_MAP) {
+            CHANNEL_BINDER_MAP[process] = channelBinder
         }
     }
 
     fun onBinderDeath(process: String) {
-        synchronized(BINDER_CHANNEL_MAP) {
-            BINDER_CHANNEL_MAP.remove(process)
+        synchronized(CHANNEL_BINDER_MAP) {
+            CHANNEL_BINDER_MAP.remove(process)
         }
     }
 
-    internal val coreChannel = object : BinderChannel.Stub() {
-        override fun invokeMethod(rpcArgument: ChannelMethodArgument): ChannelMethodResult {
+    internal val coreChannel = object : ChannelBinder.Stub() {
+        override fun invokeMethod(rpcArgument: ChannelArgument): ChannelResult {
             logger.d(
                 message = "invokeMethod by ${rpcArgument.delegateId}: ${rpcArgument.returnType} ${rpcArgument.method}(${
                     rpcArgument.args?.let {
                         return@let it.contentDeepToString()
                     } ?: ""
                 })")
-            val result = ChannelMethodResult()
+            val result = ChannelResult()
             result.succeed = true
             val clazzImpl: IBinderService?
             if (rpcArgument.method == CORE_METHOD_NEW_CONSTRUCTOR) {
                 rpcArgument.run {
                     val start = System.currentTimeMillis()
-                    clazzImpl = ServiceProvider.doFind(fromProcess, delegateId, clazz.toClass()!!, genericArgTypes, args)
+                    clazzImpl = ServiceProvider.doFind(
+                        fromProcess,
+                        delegateId,
+                        clazz.toClass()!!,
+                        genericArgTypes,
+                        args
+                    )
                     result.value = clazzImpl != null
                     result.invokeConsumer = System.currentTimeMillis() - start
                     return result
                 }
             } else {
                 rpcArgument.run {
-                    clazzImpl = ServiceProvider.getServiceImpl(fromProcess, delegateId)
+                    clazzImpl = if (instanceId != null) {
+                        ServiceProvider.getServiceInstance(instanceId!!)
+                    } else {
+                        ServiceProvider.getServiceImpl(fromProcess, delegateId)
+                    }
                 }
             }
 
@@ -112,8 +122,8 @@ internal object BinderChannelProvider {
             return result
         }
 
-        override fun registerCallbackChannel(process: String, channel: BinderChannel) {
-            addBinderChannel(process, channel)
+        override fun registerCallbackChannel(process: String, channelBinder: ChannelBinder) {
+            addBinderChannel(process, channelBinder)
         }
 
         override fun unRegisterCallbackMethod(fromProcess: String, methodId: String) {

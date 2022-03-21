@@ -10,6 +10,7 @@ import androidx.navigation.ui.navigateUp
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import chao.app.ami.UI
+import com.luqinx.xbinder.sample.callback.CallbackServiceFragment
 
 class MainActivity : AppCompatActivity() {
 
@@ -35,7 +36,8 @@ class MainActivity : AppCompatActivity() {
 //                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow), drawerLayout)
 //        setupActionBarWithNavController(navController, appBarConfiguration)
 //        navView.setupWithNavController(navController)
-        UI.show(this, TestBinderArgumentFragment::class.java)
+//        UI.show(this, TestBinderArgumentFragment::class.java)
+        UI.show(this, CallbackServiceFragment::class.java)
 //        UI.show(this, TestInvokeTypeFragment::class.java)
 //        UI.show(this, TestAsyncOnewayFragment::class.java)
     }

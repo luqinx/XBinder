@@ -11,11 +11,12 @@ import com.luqinx.xbinder.XBinder;
  */
 public class App extends Application {
 
+    private static Application sApp;
+
     @Override
     public void onCreate() {
         super.onCreate();
-
-
+        sApp = this;
     }
 
     public static <T extends IBinderService> T getRemoteService(Class<T> binderClass) {
@@ -26,5 +27,9 @@ public class App extends Application {
 //        return XBinder.getService(binderClass, BuildConfig.APPLICATION_ID); // 同下面等价
 //        return XBinder.getService(binderClass, "");   // 同下面等价
         return XBinder.getService(binderClass); // 默认主进程
+    }
+
+    public static Application getApp() {
+        return sApp;
     }
 }

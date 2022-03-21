@@ -15,7 +15,7 @@ internal object BinderBehaviors {
 
 
     fun <T: IBinderService> invokeMethod(clazz: Class<*>, method: Method, args: Array<Any?>?, options: NewServiceOptions<T>, delegateId: Int): Any? {
-        val rpcArgument = ChannelMethodArgument()
+        val rpcArgument = ChannelArgument()
         rpcArgument.fromProcess = thisProcess
         rpcArgument.clazz = clazz.name
         rpcArgument.method = method.name
@@ -23,6 +23,10 @@ internal object BinderBehaviors {
         rpcArgument.args = args
         rpcArgument.delegateId = delegateId
         rpcArgument.returnType = method.returnType.name
+
+        if (options is NewCallbackOptions) {
+            rpcArgument.instanceId = options.instanceId
+        }
 
         if (XBinder.hasGradlePlugin()) {
             // todo

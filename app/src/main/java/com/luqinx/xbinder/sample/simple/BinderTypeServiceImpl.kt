@@ -13,6 +13,10 @@ class BinderTypeServiceImpl: BinderTypeService {
         return onewayService
     }
 
+    override fun newOnewayBinder(): IBinder {
+        return OnewayService()
+    }
+
     private val onewayService = OnewayService()
 
     inner class OnewayService: Oneway.Stub() {

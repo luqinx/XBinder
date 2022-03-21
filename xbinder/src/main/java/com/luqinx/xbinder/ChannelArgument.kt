@@ -3,7 +3,6 @@ package com.luqinx.xbinder
 import android.os.Parcel
 import android.os.Parcelable
 import com.luqinx.xbinder.misc.Refined
-import com.luqinx.xbinder.serialize.ClassAdapter
 import com.luqinx.xbinder.serialize.ObjectAdapter
 import com.luqinx.xbinder.serialize.GenericAdapter
 import com.luqinx.xbinder.serialize.rawType
@@ -11,14 +10,13 @@ import java.lang.IllegalArgumentException
 import java.lang.reflect.GenericArrayType
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
-import java.sql.Ref
 
 /**
  * @author  qinchao
  *
  * @since 2022/1/2
  */
-internal class ChannelMethodArgument() : Parcelable {
+internal class ChannelArgument() : Parcelable {
 
     @JvmField
     internal var onewayCall = false
@@ -34,11 +32,13 @@ internal class ChannelMethodArgument() : Parcelable {
 
     internal var args: Array<*>? = null
 
-    internal var genericArgTypes: Array<*>? = null
+    internal var genericArgTypes: Array<out Type>? = null
 
     internal lateinit var fromProcess: String
 
     internal var delegateId: Int = -1
+
+    internal var instanceId: String? = null
 
     internal val argTypes: Array<Class<*>>?
         get() {
@@ -66,11 +66,12 @@ internal class ChannelMethodArgument() : Parcelable {
         asyncCall = parcel.readInt() != 0
         onewayCall = parcel.readInt() != 0
         delegateId = parcel.readInt()
+        instanceId = parcel.readString()
 
         val paramsCount = parcel.readInt()
         if (paramsCount > 0) {
-            genericArgTypes = GenericAdapter.read(Array::class.java, parcel) as Array<Type>?
-            args = ObjectAdapter.read(genericArgTypes?.javaClass!!, parcel) as Array<Any?>?
+            genericArgTypes = GenericAdapter.readArray(parcel, Array(paramsCount) { Type::class.java }) as Array<Type>?
+            args = ObjectAdapter.readArray(parcel, genericArgTypes!!)
         }
         Refined.finish("$method readParcel")
     }
@@ -84,22 +85,21 @@ internal class ChannelMethodArgument() : Parcelable {
         parcel.writeInt(if (asyncCall) 1 else 0)
         parcel.writeInt(if (onewayCall) 1 else 0)
         parcel.writeInt(delegateId)
+        parcel.writeString(instanceId)
         try {
             val paramsCount = genericArgTypes?.size ?: 0
-            for (i in 0 until paramsCount) {
-
-            }
-
-
             parcel.writeInt(paramsCount)
             if (paramsCount > 0) {
-
-                GenericAdapter.write(
-                    genericArgTypes,
-                    genericArgTypes?.javaClass ?: Array<Type>::class.java,
-                    parcel
+                GenericAdapter.writeArray(
+                    parcel,
+                    genericArgTypes!!,
+                    arrayOfNulls(paramsCount)
                 )
-                ObjectAdapter.write(args, args?.javaClass ?: Array<Any>::class.java, parcel)
+                ObjectAdapter.writeArray(
+                    parcel,
+                    args,
+                    genericArgTypes as Array<Type>,
+                )
             }
         } catch (e: Throwable) {
             exceptionHandler.handle(e)
@@ -111,12 +111,12 @@ internal class ChannelMethodArgument() : Parcelable {
         return 0
     }
 
-    companion object CREATOR : Parcelable.Creator<ChannelMethodArgument> {
-        override fun createFromParcel(parcel: Parcel): ChannelMethodArgument {
-            return ChannelMethodArgument(parcel)
+    companion object CREATOR : Parcelable.Creator<ChannelArgument> {
+        override fun createFromParcel(parcel: Parcel): ChannelArgument {
+            return ChannelArgument(parcel)
         }
 
-        override fun newArray(size: Int): Array<ChannelMethodArgument?> {
+        override fun newArray(size: Int): Array<ChannelArgument?> {
             return arrayOfNulls(size)
         }
     }

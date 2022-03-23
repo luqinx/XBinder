@@ -1,4 +1,4 @@
-package com.luqinx.xbinder.sample.simple.invoketype
+package com.luqinx.xbinder.sample.invoketype
 
 /**
  * @author  qinchao

@@ -4,7 +4,7 @@ package com.luqinx.xbinder
  *
  * @since 2022/1/2
  */
-interface IBinderService: IProxyBehaviors {
+interface ILightBinder: IProxyBehaviors {
     /**
      * override this method for listening the communication process death
      */

@@ -1,6 +1,6 @@
 package com.luqinx.xbinder.sample.simple
 
-import com.luqinx.xbinder.IBinderService
+import com.luqinx.xbinder.ILightBinder
 
 
 /**
@@ -8,7 +8,7 @@ import com.luqinx.xbinder.IBinderService
  *
  * @since 2022/1/8
  */
-interface PrimitiveArrayTypeService: IBinderService {
+interface PrimitiveArrayTypeService: ILightBinder {
     fun getCharArray(): CharArray?
 
     fun getByteArray(): ByteArray?

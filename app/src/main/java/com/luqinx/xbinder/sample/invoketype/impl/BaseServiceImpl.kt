@@ -1,8 +1,9 @@
-package com.luqinx.xbinder.sample.simple.invoketype
+package com.luqinx.xbinder.sample.invoketype.impl
 
 import android.annotation.SuppressLint
 import com.luqinx.xbinder.XBinder
 import com.luqinx.xbinder.sample.BuildConfig
+import com.luqinx.xbinder.sample.invoketype.BaseService
 
 /**
  * @author  qinchao
@@ -12,7 +13,6 @@ import com.luqinx.xbinder.sample.BuildConfig
 open class BaseServiceImpl: BaseService {
     @SuppressLint("Assert")
     override fun run() {
-        assert(XBinder.currentProcessName() == BuildConfig.APPLICATION_ID)
         println("run ${this.javaClass} service in process ${XBinder.currentProcessName()}")
     }
 }

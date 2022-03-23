@@ -1,4 +1,4 @@
-package com.luqinx.xbinder.sample
+package com.luqinx.xbinder.sample.simple
 
 import android.annotation.SuppressLint
 import android.os.SystemClock
@@ -6,10 +6,7 @@ import android.view.View
 import android.widget.AdapterView
 import chao.app.ami.Ami
 import chao.app.ami.base.AmiSimpleListFragment
-import com.luqinx.xbinder.sample.simple.PrimitiveArrayTypeService
-import com.luqinx.xbinder.sample.simple.PrimitiveBoxArrayTypeService
-import com.luqinx.xbinder.sample.simple.PrimitiveTypeService
-import com.luqinx.xbinder.sample.simple.SimpleTest
+import com.luqinx.xbinder.sample.App
 import java.lang.reflect.GenericArrayType
 import java.lang.reflect.ParameterizedType
 
@@ -20,7 +17,6 @@ import java.lang.reflect.ParameterizedType
  */
 class TestBinderArgumentFragment: AmiSimpleListFragment() {
 
-    private val data = arrayOf("0. 接口类型", "1. 简单泛型", "2. Parcelable,Serialize类型", "3. 基本类型", "4. 基本类型数组", "5. 基本类型包装类数组", "6. 基本类型列表", "7. 多维数组")
 
     override fun onItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
         when (position) {
@@ -32,6 +28,21 @@ class TestBinderArgumentFragment: AmiSimpleListFragment() {
             5 -> testPrimitiveBoxArrays()
             6 -> test()
         }
+    }
+
+
+    override fun getObjects(): Any {
+        return arrayOf(
+            "0. 接口类型",
+            "1. 简单泛型",
+            "2. Parcelable,Serialize类型",
+            "3. 基本类型",
+            "4. 基本类型数组",
+            "5. 基本类型包装类数组",
+            "6. 基本类型列表",
+            "7. 多维数组"
+        )
+
     }
 
     fun onTestMethodParameter(sList: List<String>, sListArray: Array<List<String>>, fragment: TestBinderArgumentFragment) {
@@ -171,11 +182,6 @@ class TestBinderArgumentFragment: AmiSimpleListFragment() {
         // 入参出参为基本类型的泛型数组
         // 入参出参为
     }
-
-    override fun getObjects(): Any {
-        return data
-    }
-
     @SuppressLint("Assert")
     private fun testPrimitiveTypes() {
         val service = App.getRemoteService(PrimitiveTypeService::class.java)

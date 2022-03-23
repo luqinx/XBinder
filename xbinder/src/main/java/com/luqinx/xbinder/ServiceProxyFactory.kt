@@ -12,21 +12,35 @@ import java.lang.reflect.Method
  */
 internal object ServiceProxyFactory {
 
-    fun <T : IBinderService> newServiceProxy(options: NewServiceOptions<T>): T {
+    fun <T> newServiceProxy(options: NewServiceOptions<T>): T {
         val service = newProxy(options)
-        service.`_$newConstructor_`(options.constructorTypes, options.constructorArgs)
+        (service as ILightBinder).setInstanceId(
+            service.`_$newConstructor_`(options.constructorTypes, options.constructorArgs)
+        )
         return service
     }
 
-    fun <T : IBinderService> newCallbackProxy(options: NewCallbackOptions<T>): T {
+    fun <T> newCallbackProxy(options: NewCallbackOptions<T>): T {
         val callback = newProxy(options)
 //        callback.`_$bindCallbackProxy_`(options.instanceId)
         return callback
     }
 
-    private fun <T : IBinderService> newProxy(options: NewServiceOptions<T>): T {
+    private fun <T> newProxy(options: NewServiceOptions<T>): T {
         return options.run {
-            Interceptor.of(null as T?).interfaces(serviceClass).intercepted(true)
+            val interfaces =
+                if (options is NewCallbackOptions && !IBinderCallback::class.java.isAssignableFrom(
+                        serviceClass
+                    )
+                ) {
+                    arrayOf(IBinderCallback::class.java, serviceClass, IProxyFlag::class.java)
+                } else if (!ILightBinder::class.java.isAssignableFrom(serviceClass)) {
+                    arrayOf(ILightBinder::class.java, serviceClass, IProxyFlag::class.java)
+                } else {
+                    arrayOf(serviceClass, IProxyFlag::class.java)
+                }
+            Interceptor.of(null as T?).interfaces(*interfaces)
+                .intercepted(true)
                 .invoke(object : OnInvoke<T?> {
                     private val objectBehaviors: ObjectBehaviors =
                         ObjectBehaviors(
@@ -36,7 +50,12 @@ internal object ServiceProxyFactory {
                         )
 
                     private val LOCAL_BEHAVIORS: ProxyBehaviors by lazy {
-                        ProxyBehaviors(processName, serviceClass, objectBehaviors.hashCode())
+                        ProxyBehaviors(
+                            processName,
+                            serviceClass,
+                            objectBehaviors.hashCode(),
+                            if (options is NewCallbackOptions) options.instanceId else null
+                        )
                     }
 
                     override fun onInvoke(source: T?, method: Method?, args: Array<Any?>?): Any? {

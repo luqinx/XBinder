@@ -1,7 +1,7 @@
 package com.luqinx.xbinder.sample.callback
 
+import android.view.View
 import chao.java.tools.servicepool.annotation.Service
-import com.luqinx.xbinder.IBinderService
 
 /**
  * @author  qinchao
@@ -9,7 +9,7 @@ import com.luqinx.xbinder.IBinderService
  * @since 2022/3/20
  */
 @Service
-class CallbackServiceImpl: CallbackService {
+class LightBinderCallbackServiceImpl: LightBinderCallbackService {
     private val callbacks = arrayListOf<Callback>()
 
     override fun registerCallback(callback: Callback) {
@@ -35,6 +35,11 @@ class CallbackServiceImpl: CallbackService {
         System.gc()
         System.runFinalization()
         System.gc()
+    }
+
+    override fun invokeClickListener(listener: View.OnClickListener) {
+        println("invokeClickListener invoked")
+        listener.onClick(null)
     }
 
     override fun unregisterCallback(callback: Callback) {

@@ -1,7 +1,5 @@
 package com.luqinx.xbinder
 
-import androidx.annotation.Keep
-
 /**
  *
  *  !!! don't override the methods in this class
@@ -12,7 +10,6 @@ import androidx.annotation.Keep
  *
  * @since 2022/1/2
  */
-@Keep
 interface IProxyBehaviors {
     /**
      *  !!! don't override this method
@@ -20,7 +17,7 @@ interface IProxyBehaviors {
      *
      *  create remote service
      */
-    @JvmDefault fun `_$newConstructor_`(consTypes: Array<*>?, consArgs: Array<*>?): Boolean = false
+    @JvmDefault fun `_$newConstructor_`(consTypes: Array<*>?, consArgs: Array<*>?): String? = null
 
     /**
      *  !!! don't override this method
@@ -53,4 +50,8 @@ interface IProxyBehaviors {
      *  @return return the name of the process who communication with
      */
     @JvmDefault fun getRemoteProcessName(): String = "" // will be intercepted by ServiceLocalBehaviors
+
+    @JvmDefault fun getInstanceId(): String? = null
+
+    @JvmDefault fun setInstanceId(instanceId: String?) {}
 }

@@ -7,7 +7,7 @@ import com.luqinx.xbinder.annotation.InvokeType
  *
  * @since 2022/1/2
  */
-internal open class NewServiceOptions<T: IBinderService>(val serviceClass: Class<T>, val processName: String) {
+internal open class NewServiceOptions<T>(val serviceClass: Class<T>, val processName: String) {
 
     var constructorTypes: Array<*>? = null
 

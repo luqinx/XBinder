@@ -24,7 +24,6 @@ internal class ObjectBehaviors(
     }
 
     fun finalize() {
-        println("finalize finalize finalize")
         if (instanceId == null) return
         val argument = ChannelArgument()
         argument.clazz = serviceClass.name

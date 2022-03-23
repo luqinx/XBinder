@@ -22,7 +22,7 @@ class AppXBinderProvider: XBinderProvider() {
                 clazz: Class<*>,
                 consTypes: Array<*>?,
                 constArgs: Array<*>?
-            ): IBinderService? {
+            ): ILightBinder? {
                 return null
             }
         })

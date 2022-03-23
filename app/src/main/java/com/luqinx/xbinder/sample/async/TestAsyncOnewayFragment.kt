@@ -1,11 +1,11 @@
-package com.luqinx.xbinder.sample
+package com.luqinx.xbinder.sample.async
 
 import android.os.SystemClock
 import android.view.View
 import android.widget.AdapterView
 import chao.app.ami.base.AmiSimpleListFragment
+import com.luqinx.xbinder.sample.App
 import com.luqinx.xbinder.sample.aidl.Oneway
-import com.luqinx.xbinder.sample.async.AsyncCallService
 import com.luqinx.xbinder.sample.simple.BinderTypeService
 
 /**

@@ -1,6 +1,6 @@
 package com.luqinx.xbinder.serialize
 
-import com.luqinx.xbinder.IBinderService
+import com.luqinx.xbinder.ILightBinder
 import java.lang.reflect.GenericArrayType
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
@@ -39,7 +39,7 @@ internal object AdapterManager {
         register(Float::class.java, PrimitiveAdapter) // for multi-dimensional float array
         register(Double::class.java, PrimitiveAdapter) // for multi-dimensional double array
         register(Boolean::class.java, PrimitiveAdapter) // for multi-dimensional boolean array
-        register(IBinderService::class.java, ServiceAdapter)
+        register(ILightBinder::class.java, LightBinderAdapter)
         register(Any::class.java, ObjectAdapter)
     }
 
@@ -54,19 +54,29 @@ internal object AdapterManager {
         adapterMap.remove(type)
     }
 
-    fun getAdapter(type: Type, basicComponent: Type): ParcelAdapter<*>? {
+    fun getAdapter(_type: Type, basicComponent: Type): ParcelAdapter<*>? {
+        var type = _type
         if (isInWhitList(type)) {
             return null
         }
         if  (type.rawType() == List::class.java && type.actualTypeArguments()!![0] in whiteList) {
             return null
         }
-        if (basicComponent is Class<*> && IBinderService::class.java.isAssignableFrom(basicComponent)
-            || (basicComponent.componentType() is Class<*> && IBinderService::class.java.isAssignableFrom(
-                basicComponent.componentType() as Class<*>
+        val basicComponentType = basicComponent.componentType() ?: basicComponent
+        if (type is Class<*> && ILightBinder::class.java.isAssignableFrom(type)) {
+            type = ILightBinder::class.java
+        } else if ((basicComponentType is Class<*> && ILightBinder::class.java.isAssignableFrom(
+                basicComponentType
             ))
         ) {
-            return ServiceAdapter
+            type = ILightBinder::class.java
+        } else if ((basicComponentType is Class<*> && basicComponentType.isInterface && !List::class.java.isAssignableFrom(
+                basicComponentType
+            ) && Type::class.java != basicComponent && !Map::class.java.isAssignableFrom(
+                basicComponentType
+            ))
+        ) {
+            return SimpleBinderAdapter
         }
         return adapterMap[type] ?: adapterMap[type.rawType()]
     }

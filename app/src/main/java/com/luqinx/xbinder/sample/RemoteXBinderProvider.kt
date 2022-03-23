@@ -8,9 +8,12 @@ import com.luqinx.xbinder.sample.async.AsyncCallJavaService
 import com.luqinx.xbinder.sample.async.AsyncCallService
 import com.luqinx.xbinder.sample.async.impl.AsyncCallJavaServiceImpl
 import com.luqinx.xbinder.sample.async.impl.AsyncCallServiceImpl
-import com.luqinx.xbinder.sample.callback.CallbackService
-import com.luqinx.xbinder.sample.callback.CallbackServiceFragment
-import com.luqinx.xbinder.sample.callback.CallbackServiceImpl
+import com.luqinx.xbinder.sample.callback.LightBinderCallbackService
+import com.luqinx.xbinder.sample.callback.LightBinderCallbackServiceImpl
+import com.luqinx.xbinder.sample.callback.SimpleCallbackService
+import com.luqinx.xbinder.sample.callback.SimpleCallbackServiceImpl
+import com.luqinx.xbinder.sample.invoketype.RemoteOnlyService
+import com.luqinx.xbinder.sample.invoketype.impl.RemoteOnlyServiceImpl
 import com.luqinx.xbinder.sample.simple.*
 
 /**
@@ -32,7 +35,7 @@ class RemoteXBinderProvider: XBinderProvider() {
                 clazz: Class<*>,
                 consTypes: Array<*>?,
                 constArgs: Array<*>?
-            ): IBinderService {
+            ): Any {
                 return when (clazz) {
                     PrimitiveTypeService::class.java -> PrimitiveTypeServiceImpl()
                     PrimitiveArrayTypeService::class.java -> PrimitiveArrayTypeServiceImpl()
@@ -40,9 +43,13 @@ class RemoteXBinderProvider: XBinderProvider() {
                     AsyncCallJavaService::class.java -> AsyncCallJavaServiceImpl()
                     BinderTypeService::class.java -> BinderTypeServiceImpl()
                     PrimitiveBoxArrayTypeService::class.java -> PrimitiveBoxArrayTypeServiceImpl()
-                    CallbackService::class.java -> CallbackServiceImpl()
+                    LightBinderCallbackService::class.java -> LightBinderCallbackServiceImpl()
+                    SimpleCallbackService::class.java -> SimpleCallbackServiceImpl()
+
+                    // invokeType
+                    RemoteOnlyService::class.java -> RemoteOnlyServiceImpl()
                     else -> {
-                        Spa.getService(clazz as Class<IService>) as IBinderService
+                        Spa.getService(clazz as Class<IService>) as ILightBinder
                     }
                 }
             }

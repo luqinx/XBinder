@@ -69,7 +69,7 @@ internal object ChannelProvider {
                 })")
             val result = ChannelResult()
             result.succeed = true
-            val clazzImpl: IBinderService?
+            val clazzImpl: Any?
             when (rpcArgument.method) {
                 CORE_METHOD_UNREGISTER_INSTANCE -> {
                     ServiceProvider.unregisterServiceInstance(rpcArgument.fromProcess, rpcArgument.instanceId!!)
@@ -85,7 +85,11 @@ internal object ChannelProvider {
                             genericArgTypes,
                             args
                         )
-                        result.value = clazzImpl != null
+                        result.value = clazzImpl?.let {
+                            "${javaClass}-${hashCode()}"
+                        } ?: run {
+                            null
+                        }
                         result.invokeConsumer = System.currentTimeMillis() - start
                         return result
                     }

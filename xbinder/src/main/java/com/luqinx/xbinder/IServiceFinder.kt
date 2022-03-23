@@ -6,5 +6,5 @@ interface IServiceFinder {
         clazz: Class<*>,
         consTypes: Array<*>?,
         constArgs: Array<*>?
-    ): IBinderService?
+    ): Any?
 }

@@ -1,6 +1,6 @@
 package com.luqinx.xbinder.sample.async
 
-import com.luqinx.xbinder.IBinderService
+import com.luqinx.xbinder.ILightBinder
 import com.luqinx.xbinder.annotation.AsyncCall
 import com.luqinx.xbinder.annotation.OnewayCall
 
@@ -9,7 +9,7 @@ import com.luqinx.xbinder.annotation.OnewayCall
  *
  * @since 2022/2/19
  */
-interface AsyncCallService : IBinderService {
+interface AsyncCallService : ILightBinder {
 
     @AsyncCall
     fun asyncCall()

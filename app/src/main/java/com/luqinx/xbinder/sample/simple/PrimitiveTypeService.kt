@@ -1,13 +1,13 @@
 package com.luqinx.xbinder.sample.simple
 
-import com.luqinx.xbinder.IBinderService
+import com.luqinx.xbinder.ILightBinder
 
 /**
  * @author  qinchao
  *
  * @since 2022/1/5
  */
-interface PrimitiveTypeService: IBinderService {
+interface PrimitiveTypeService: ILightBinder {
     fun run()
 
     fun getChar(): Char

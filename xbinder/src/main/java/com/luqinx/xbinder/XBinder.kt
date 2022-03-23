@@ -16,7 +16,7 @@ object XBinder {
 
     @JvmStatic
     @JvmOverloads
-    fun <T : IBinderService> getService(
+    fun <T> getService(
         serviceClass: Class<T>,
         processName: String = "",
         constructorTypes: Array<Class<*>>? = null,
@@ -39,7 +39,7 @@ object XBinder {
      */
     @JvmStatic
     @JvmOverloads
-    fun <T : IBinderService> getParameterizedService(
+    fun <T : ILightBinder> getParameterizedService(
         serviceClass: Class<T>,
         processName: String = "",
         constructorTypes: Array<Type>? = null,
@@ -69,7 +69,7 @@ object XBinder {
      *  @param defService default service will be called if the remote service not exists
      *  @param invokeType_
      */
-    private fun <T : IBinderService> getServiceInner(
+    private fun <T> getServiceInner(
         serviceClass: Class<T>,
         processName: String = "",
         constructorTypes: Array<*>? = null,

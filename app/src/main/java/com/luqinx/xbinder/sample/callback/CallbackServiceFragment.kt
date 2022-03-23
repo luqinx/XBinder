@@ -2,6 +2,7 @@ package com.luqinx.xbinder.sample.callback
 
 import android.view.View
 import android.widget.AdapterView
+import androidx.lifecycle.LifecycleOwner
 import chao.app.ami.base.AmiSimpleListFragment
 import com.luqinx.xbinder.sample.App
 
@@ -18,7 +19,7 @@ class CallbackServiceFragment: AmiSimpleListFragment() {
         }
     }
 
-    private val callbackService = App.getRemoteService(CallbackService::class.java)
+    private val callbackService = App.getRemoteService(LightBinderCallbackService::class.java)
 
     override fun onItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
         when(position) { // 普通接口回调
@@ -26,7 +27,7 @@ class CallbackServiceFragment: AmiSimpleListFragment() {
                 callbackService.invokeCallback(callbackInstance)
             }
             1 -> { // 匿名内部类回调
-                App.getRemoteService(CallbackService::class.java).invokeCallback(object : Callback{
+                App.getRemoteService(LightBinderCallbackService::class.java).invokeCallback(object : Callback{
                     override fun onCallback() {
                         println("onCallback invoked from remote")
                     }
@@ -69,17 +70,46 @@ class CallbackServiceFragment: AmiSimpleListFragment() {
             5 -> {
                 callbackService.remoteGc()
             }
+            6 -> {
+                App.getRemoteService(SimpleCallbackService::class.java).invokeCallback(object: Callback{
+                    override fun onCallback() {
+                        println("SimpleCallbackService.onCallback invoked from remote")
+                    }
+                })
+            }
+            7 -> {
+                App.getRemoteService(SimpleCallbackService::class.java).invokeSimpleCallback(object: SimpleCallback {
+                    override fun onCallback() {
+                        println("SimpleCallbackService.onCallback invoked from remote")
+                    }
+
+                })
+            }
+            8 -> {
+                callbackService.invokeCallback(object: LifecycleCallback{
+                    override fun onCallback() {
+                        println("LifecycleCallback.onCallback invoked from remote")
+                    }
+
+                    override fun getLifecycleOwner(): LifecycleOwner {
+                        return viewLifecycleOwner
+                    }
+                })
+            }
         }
     }
 
     override fun getObjects(): Any {
         return arrayOf(
-            "普通接口回调",
-            "匿名内部类回调",
-            "普通接口数组",
-            "接口为null",
-            "接口在Object数组中",
-            "remote进程GC"
+            "0.普通接口回调",
+            "1.匿名内部类回调",
+            "2.普通接口数组",
+            "3.接口为null",
+            "4.接口在Object数组中(暂不支持)",
+            "5.remote进程GC(远程代理回收,会触发本地LightBinder回收)",
+            "6.普通接口服务(没有继承ILightBinder或IBinderCallback)",
+            "7.普通接口回调(没有继承ILightBinder或IBinderCallback)",
+            "8.IBinderCallback接口，支持Lifecycle",
         )
     }
 }

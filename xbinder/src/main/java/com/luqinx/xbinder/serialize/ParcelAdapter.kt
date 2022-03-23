@@ -1,6 +1,7 @@
 package com.luqinx.xbinder.serialize
 
 import android.os.Parcel
+import com.luqinx.xbinder.ILightBinder
 import com.luqinx.xbinder.classloader
 import com.luqinx.xbinder.exceptionHandler
 import java.lang.reflect.GenericArrayType
@@ -117,7 +118,9 @@ interface ParcelAdapter<T: Any> {
      */
     fun write(parcel: Parcel, value: Any?, basicComponent: Type) {
         try {
-            val component = value?.javaClass ?: basicComponent
+            val component =
+                if (value is ILightBinder) ILightBinder::class.java else value?.javaClass
+                    ?: basicComponent
             GenericAdapter.writeInstance(parcel, component, component)
             val adapter = AdapterManager.getAdapter(component, basicComponent) as ParcelAdapter<Any>?
             adapter?.apply {

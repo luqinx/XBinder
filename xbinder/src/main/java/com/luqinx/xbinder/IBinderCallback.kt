@@ -7,6 +7,6 @@ import androidx.lifecycle.LifecycleOwner
  *
  * @since 2022/2/20
  */
-interface IBinderCallback: IBinderService {
+interface IBinderCallback: ILightBinder {
     fun getLifecycleOwner(): LifecycleOwner? = null
 }

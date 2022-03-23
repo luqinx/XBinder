@@ -1,14 +1,15 @@
 package com.luqinx.xbinder.sample.callback
 
+import android.view.View
 import chao.java.tools.servicepool.IService
-import com.luqinx.xbinder.IBinderService
+import com.luqinx.xbinder.ILightBinder
 
 /**
  * @author  qinchao
  *
  * @since 2022/3/20
  */
-interface CallbackService: IBinderService,IService {
+interface LightBinderCallbackService: ILightBinder {
     fun registerCallback(callback: Callback)
     fun unregisterCallback(callback: Callback)
 
@@ -17,4 +18,6 @@ interface CallbackService: IBinderService,IService {
     fun invokeObjects(objs: Array<Any?>)
 
     fun remoteGc()
+
+    fun invokeClickListener(listener: View.OnClickListener)
 }

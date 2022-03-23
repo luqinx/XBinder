@@ -1,12 +1,10 @@
 package com.luqinx.xbinder.sample.callback
 
-import com.luqinx.xbinder.ILightBinder
-
 /**
  * @author  qinchao
  *
- * @since 2022/3/20
+ * @since 2022/3/23
  */
-interface Callback: ILightBinder {
+interface SimpleCallback {
     fun onCallback()
 }

@@ -14,7 +14,13 @@ import java.lang.reflect.Method
 internal object BinderBehaviors {
 
 
-    fun <T: IBinderService> invokeMethod(clazz: Class<*>, method: Method, args: Array<Any?>?, options: NewServiceOptions<T>, delegateId: Int): Any? {
+    fun <T> invokeMethod(
+        clazz: Class<*>,
+        method: Method,
+        args: Array<Any?>?,
+        options: NewServiceOptions<T>,
+        delegateId: Int
+    ): Any? {
         val rpcArgument = ChannelArgument()
         rpcArgument.fromProcess = thisProcess
         rpcArgument.clazz = clazz.name

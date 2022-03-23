@@ -37,7 +37,8 @@ class MainActivity : AppCompatActivity() {
 //        setupActionBarWithNavController(navController, appBarConfiguration)
 //        navView.setupWithNavController(navController)
 //        UI.show(this, TestBinderArgumentFragment::class.java)
-        UI.show(this, CallbackServiceFragment::class.java)
+        UI.show(this, FunctionListFragment::class.java)
+//        UI.show(this, CallbackServiceFragment::class.java)
 //        UI.show(this, TestInvokeTypeFragment::class.java)
 //        UI.show(this, TestAsyncOnewayFragment::class.java)
     }

@@ -100,5 +100,5 @@ internal object BinderInvoker {
         return threadLocal.get()?.toProcess!!
     }
 
-    class InvokerHolder(val toProcess:String)
+    class InvokerHolder(val toProcess:String,)
 }

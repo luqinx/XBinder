@@ -1,4 +1,8 @@
-package com.luqinx.xbinder.sample.callback
+package com.luqinx.xbinder.sample.callback.impl
+
+import com.luqinx.xbinder.sample.callback.Callback
+import com.luqinx.xbinder.sample.callback.SimpleCallback
+import com.luqinx.xbinder.sample.callback.SimpleCallbackService
 
 /**
  * @author  qinchao

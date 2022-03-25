@@ -10,7 +10,7 @@ import androidx.navigation.ui.navigateUp
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import chao.app.ami.UI
-import com.luqinx.xbinder.sample.callback.CallbackServiceFragment
+import com.luqinx.xbinder.sample.callback.SimpleCallback
 
 class MainActivity : AppCompatActivity() {
 
@@ -41,6 +41,8 @@ class MainActivity : AppCompatActivity() {
 //        UI.show(this, CallbackServiceFragment::class.java)
 //        UI.show(this, TestInvokeTypeFragment::class.java)
 //        UI.show(this, TestAsyncOnewayFragment::class.java)
+
+        App.getRemoteService(SimpleCallback::class.java) // 唤醒remote进程
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

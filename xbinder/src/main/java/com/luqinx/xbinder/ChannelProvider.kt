@@ -85,11 +85,12 @@ internal object ChannelProvider {
                             genericArgTypes,
                             args
                         )
-                        result.value = clazzImpl?.let {
+                        result.returnValue = clazzImpl?.let {
                             "${javaClass}-${hashCode()}"
                         } ?: run {
                             null
                         }
+                        result.returnType = String::class.java
                         result.invokeConsumer = System.currentTimeMillis() - start
                         return result
                     }
@@ -116,13 +117,15 @@ internal object ChannelProvider {
                     val method = clazzImpl.javaClass.getDeclaredMethod(rpcArgument.method)
                     method.isAccessible = true
                     val start = System.currentTimeMillis()
-                    result.value = method.invoke(clazzImpl)
+                    result.returnType = method.genericReturnType
+                    result.returnValue = method.invoke(clazzImpl)
                     result.invokeConsumer = System.currentTimeMillis() - start
                 } else {
                     val method = clazzImpl.javaClass.getDeclaredMethod(rpcArgument.method, *rpcArgument.argTypes!!)
                     method.isAccessible = true
                     val start = System.currentTimeMillis()
-                    result.value = method.invoke(clazzImpl, *rpcArgument.args!!)
+                    result.returnType = method.genericReturnType
+                    result.returnValue = method.invoke(clazzImpl, *rpcArgument.args!!)
                     result.invokeConsumer = System.currentTimeMillis() - start
                 }
             } catch (e: Throwable) {

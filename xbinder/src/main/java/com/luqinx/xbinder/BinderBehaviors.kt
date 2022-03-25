@@ -29,10 +29,7 @@ internal object BinderBehaviors {
         rpcArgument.args = args
         rpcArgument.delegateId = delegateId
         rpcArgument.returnType = method.returnType.name
-
-        if (options is NewCallbackOptions) {
-            rpcArgument.instanceId = options.instanceId
-        }
+        rpcArgument.instanceId = options.instanceId
 
         if (XBinder.hasGradlePlugin()) {
             // todo

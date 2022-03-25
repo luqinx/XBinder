@@ -12,7 +12,7 @@ object Refined {
 
     private var startTime = 0L
 
-    private const val enabled = false
+    private const val enabled = true
 
     fun start() {
         if (!enabled) return
@@ -22,7 +22,13 @@ object Refined {
 
     fun finish(tag: String) {
         if (!enabled) return
-        logger.i("XBinder", " $tag: spent ${SystemClock.elapsedRealtimeNanos() - startTime}")
+        logger.i(message = "$tag: spent ${SystemClock.elapsedRealtimeNanos() - startTime}ns")
+    }
+
+    fun log(tag: String) {
+        if (!enabled) return
+        logger.i(message = "$tag: spent ${SystemClock.elapsedRealtimeNanos() - startTime}ns")
+        startTime = SystemClock.elapsedRealtimeNanos()
     }
 
     fun reset() {

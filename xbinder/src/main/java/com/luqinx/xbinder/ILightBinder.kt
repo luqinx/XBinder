@@ -1,4 +1,7 @@
 package com.luqinx.xbinder
+
+import androidx.lifecycle.LifecycleOwner
+
 /**
  * @author  qinchao
  *
@@ -21,4 +24,9 @@ interface ILightBinder: IProxyBehaviors {
      * @see XBinder.notifyProcessReady
      */
     @JvmDefault fun onProcessReady(process: String) { }
+
+    /**
+     *  override this method for recycling this light binder when the owner destroy
+     */
+    @JvmDefault fun getLifecycleOwner(): LifecycleOwner? = null
 }

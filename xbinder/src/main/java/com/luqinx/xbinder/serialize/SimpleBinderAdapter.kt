@@ -17,14 +17,14 @@ object SimpleBinderAdapter: ParcelAdapter<Any> {
 
         val instanceId = parcel.readString()!!
         val process = parcel.readString()!!
-        val serviceClazz = GenericAdapter.readInstance(parcel, component) as Class<ILightBinder>
+        val serviceClazz = GenericAdapter.readInstance(parcel, component) as Class<*>
 
         return ServiceProvider.getServiceInstance(
             XBinder.currentProcessName(),
             instanceId,
         ) // don't create proxy if in local
             ?: ServiceProxyFactory.newCallbackProxy(
-                NewCallbackOptions(
+                NewServiceOptions(
                     serviceClazz,
                     process,
                     instanceId,
@@ -53,7 +53,7 @@ object SimpleBinderAdapter: ParcelAdapter<Any> {
                     .interfaces(ILightBinder::class.java).newInstance()
                 else this
                 ServiceProvider.registerServiceInstance(
-                    BinderInvoker.invokeProcess(),
+                    ChannelArgument.toProcess,
                     instanceId,
                     lightBinder as ILightBinder
                 )

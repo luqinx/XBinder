@@ -17,6 +17,7 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         sApp = this;
+        TimeAssert.Companion.start();
     }
 
     public static <T> T getRemoteService(Class<T> binderClass) {

@@ -10,7 +10,6 @@ import com.luqinx.xbinder.annotation.InvokeType
 internal class NewCallbackOptions<T>(
     callbackClass: Class<T>,
     callbackProcess: String,
-    val instanceId: String,
 ): NewServiceOptions<T>(callbackClass, callbackProcess) {
     init {
         isCallback = true

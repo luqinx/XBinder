@@ -2,6 +2,9 @@ package com.luqinx.xbinder
 
 import android.os.Parcel
 import android.os.Parcelable
+import com.luqinx.xbinder.serialize.GenericAdapter
+import com.luqinx.xbinder.serialize.ObjectAdapter
+import java.lang.reflect.Type
 
 /**
  * @author  qinchao
@@ -16,22 +19,33 @@ class ChannelResult() : Parcelable {
 
     var errCode: Int = BinderInvoker.ERROR_CODE_SUCCESS
 
-    var value: Any? = null
+    var returnValue: Any? = null
+
+    lateinit var returnType: Type
 
     var invokeConsumer = 0L
 
     constructor(parcel: Parcel) : this() {
         succeed = parcel.readInt() == 1
         errMessage = parcel.readString()
-        value = parcel.readValue(classloader)
         invokeConsumer = parcel.readLong()
+        if (parcel.readInt() > 0) {
+            returnType = GenericAdapter.readInstance(parcel, Any::class.java)!!
+            returnValue = ObjectAdapter.read(parcel, returnType)
+        }
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeInt( if (succeed) 1 else 0 )
         parcel.writeString(errMessage)
-        parcel.writeValue(value)
         parcel.writeLong(invokeConsumer)
+        if (returnValue != null) {
+            parcel.writeInt(1)
+            GenericAdapter.writeInstance(parcel, returnType, returnType)
+            ObjectAdapter.write(parcel, returnValue, returnType)
+        } else {
+            parcel.writeInt(-1)
+        }
     }
 
     override fun describeContents(): Int {

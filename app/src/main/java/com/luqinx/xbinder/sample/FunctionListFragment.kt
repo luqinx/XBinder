@@ -5,7 +5,7 @@ import android.widget.AdapterView
 import chao.app.ami.UI
 import chao.app.ami.base.AmiSimpleListFragment
 import com.luqinx.xbinder.sample.async.TestAsyncOnewayFragment
-import com.luqinx.xbinder.sample.callback.CallbackServiceFragment
+import com.luqinx.xbinder.sample.callback.LightBinderServiceFragment
 import com.luqinx.xbinder.sample.invoketype.TestInvokeTypeFragment
 import com.luqinx.xbinder.sample.simple.TestBinderArgumentFragment
 
@@ -19,7 +19,7 @@ class FunctionListFragment: AmiSimpleListFragment() {
         when(position) {
             0 -> UI.show(context, TestBinderArgumentFragment::class.java)
             1 -> UI.show(context, TestAsyncOnewayFragment::class.java)
-            2 -> UI.show(context, CallbackServiceFragment::class.java)
+            2 -> UI.show(context, LightBinderServiceFragment::class.java)
             3 -> UI.show(context, TestInvokeTypeFragment::class.java)
         }
     }

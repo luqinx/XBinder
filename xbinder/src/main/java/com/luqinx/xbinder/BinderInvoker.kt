@@ -14,8 +14,6 @@ internal object BinderInvoker {
     const val ERROR_CODE_WITH_EXCEPTION = 2
     const val ERROR_CODE_ONEWAY_ERROR = 3
 
-    private val threadLocal = ThreadLocal<InvokerHolder>()
-
     fun invokeMethod(
         processName: String,
         rpcArgument: ChannelArgument,
@@ -26,12 +24,12 @@ internal object BinderInvoker {
         val channelBinder = ChannelProvider.getBinderChannel(processName)
         var consumer = 0L
         try {
-            threadLocal.set(InvokerHolder(processName))
+            ChannelArgument.toProcess = processName
             channelBinder?.invokeMethod(rpcArgument)?.apply {
                 if (succeed) {
                     callSuccess = true
                     consumer = invokeConsumer
-                    return value
+                    return returnValue
                 } else {
                     if (localInvokeAfterRemoteMissing && errCode == ERROR_CODE_REMOTE_NOT_FOUND) {
                         throw XBinderException(errCode, errMessage)
@@ -53,7 +51,7 @@ internal object BinderInvoker {
         } catch (e: Throwable) {
             exceptionHandler.handle(e)
         } finally {
-            threadLocal.set(null)
+            ChannelArgument.removeFromThreadLocal()
 
             val delta = System.currentTimeMillis() - start
             if (showSlowInvoke(delta)) {
@@ -95,10 +93,4 @@ internal object BinderInvoker {
             else -> false
         }
     }
-
-    fun invokeProcess(): String {
-        return threadLocal.get()?.toProcess!!
-    }
-
-    class InvokerHolder(val toProcess:String,)
 }

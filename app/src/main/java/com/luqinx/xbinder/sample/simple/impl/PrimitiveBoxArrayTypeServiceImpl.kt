@@ -1,6 +1,7 @@
-package com.luqinx.xbinder.sample.simple
+package com.luqinx.xbinder.sample.simple.impl
 
 import com.luqinx.xbinder.sample.BuildConfig
+import com.luqinx.xbinder.sample.simple.PrimitiveBoxArrayTypeService
 
 /**
  * @author  qinchao

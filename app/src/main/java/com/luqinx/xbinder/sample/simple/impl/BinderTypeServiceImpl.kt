@@ -1,7 +1,8 @@
-package com.luqinx.xbinder.sample.simple
+package com.luqinx.xbinder.sample.simple.impl
 
 import android.os.IBinder
 import com.luqinx.xbinder.sample.aidl.Oneway
+import com.luqinx.xbinder.sample.simple.BinderTypeService
 
 /**
  * @author  qinchao

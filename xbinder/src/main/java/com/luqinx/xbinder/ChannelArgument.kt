@@ -1,7 +1,6 @@
 package com.luqinx.xbinder
 
 import android.os.Parcel
-import android.os.Parcelable
 import com.luqinx.xbinder.misc.Refined
 import com.luqinx.xbinder.serialize.ObjectAdapter
 import com.luqinx.xbinder.serialize.GenericAdapter
@@ -17,6 +16,24 @@ import java.lang.reflect.Type
  * @since 2022/1/2
  */
 internal class ChannelArgument() {
+
+    companion object {
+        private val sThreadLocal = ThreadLocal<String>()
+
+        var toProcess: String
+            get() {
+                return sThreadLocal.get()!!
+            }
+            set(value) {
+                sThreadLocal.set(value)
+            }
+
+        fun removeFromThreadLocal() {
+            sThreadLocal.remove()
+        }
+
+    }
+
 
     @JvmField
     internal var onewayCall = false

@@ -27,7 +27,7 @@ object LightBinderAdapter: ParcelAdapter<ILightBinder> {
             instanceId,
         ) // don't create proxy if in local
             ?: ServiceProxyFactory.newCallbackProxy(
-                NewCallbackOptions(
+                NewServiceOptions(
                     serviceClazz,
                     process,
                     instanceId,
@@ -53,25 +53,23 @@ object LightBinderAdapter: ParcelAdapter<ILightBinder> {
                 parcel.writeString(XBinder.currentProcessName())
                 GenericAdapter.writeInstance(parcel, component, component)
 
-                val invokeProcess = BinderInvoker.invokeProcess()
+                val invokeProcess = ChannelArgument.toProcess
                 ServiceProvider.registerServiceInstance(
                     invokeProcess,
                     instanceId,
                     this
                 )
-                if (this is IBinderCallback) {
-                    getLifecycleOwner()?.lifecycle?.addObserver(object : LifecycleEventObserver{
-                        override fun onStateChanged(
-                            source: LifecycleOwner,
-                            event: Lifecycle.Event
-                        ) {
-                            if (event == Lifecycle.Event.ON_DESTROY) {
-                                ServiceProvider.unregisterServiceInstance(invokeProcess, instanceId)
-                            }
+                getLifecycleOwner()?.lifecycle?.addObserver(object : LifecycleEventObserver{
+                    override fun onStateChanged(
+                        source: LifecycleOwner,
+                        event: Lifecycle.Event
+                    ) {
+                        if (event == Lifecycle.Event.ON_DESTROY) {
+                            ServiceProvider.unregisterServiceInstance(invokeProcess, instanceId)
                         }
+                    }
 
-                    })
-                }
+                })
             }
         } ?: run {
             parcel.writeInt(-1)

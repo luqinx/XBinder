@@ -3,6 +3,7 @@ package com.luqinx.xbinder
 import com.luqinx.interceptor.Interceptor
 import com.luqinx.interceptor.OnInvoke
 import com.luqinx.xbinder.annotation.InvokeType
+import com.luqinx.xbinder.misc.Refined
 import java.lang.reflect.Method
 
 /**
@@ -13,28 +14,27 @@ import java.lang.reflect.Method
 internal object ServiceProxyFactory {
 
     fun <T> newServiceProxy(options: NewServiceOptions<T>): T {
+        Refined.start()
         val service = newProxy(options)
+        Refined.log("new proxy")
         (service as ILightBinder).setInstanceId(
             service.`_$newConstructor_`(options.constructorTypes, options.constructorArgs)
         )
+        Refined.log("_\$newConstructor_")
         return service
     }
 
-    fun <T> newCallbackProxy(options: NewCallbackOptions<T>): T {
-        val callback = newProxy(options)
-//        callback.`_$bindCallbackProxy_`(options.instanceId)
-        return callback
+    fun <T> newCallbackProxy(options: NewServiceOptions<T>): T {
+        options.isCallback = true
+        options.invokeType = InvokeType.REMOTE_ONLY
+        //        callback.`_$bindCallbackProxy_`(options.instanceId)
+        return newProxy(options)
     }
 
     private fun <T> newProxy(options: NewServiceOptions<T>): T {
         return options.run {
             val interfaces =
-                if (options is NewCallbackOptions && !IBinderCallback::class.java.isAssignableFrom(
-                        serviceClass
-                    )
-                ) {
-                    arrayOf(IBinderCallback::class.java, serviceClass, IProxyFlag::class.java)
-                } else if (!ILightBinder::class.java.isAssignableFrom(serviceClass)) {
+                if (!ILightBinder::class.java.isAssignableFrom(serviceClass)) {
                     arrayOf(ILightBinder::class.java, serviceClass, IProxyFlag::class.java)
                 } else {
                     arrayOf(serviceClass, IProxyFlag::class.java)
@@ -46,7 +46,7 @@ internal object ServiceProxyFactory {
                         ObjectBehaviors(
                             serviceClass,
                             options.processName,
-                            if (options is NewCallbackOptions) options.instanceId else null
+                            options.instanceId
                         )
 
                     private val LOCAL_BEHAVIORS: ProxyBehaviors by lazy {
@@ -54,7 +54,7 @@ internal object ServiceProxyFactory {
                             processName,
                             serviceClass,
                             objectBehaviors.hashCode(),
-                            if (options is NewCallbackOptions) options.instanceId else null
+                            options.instanceId
                         )
                     }
 

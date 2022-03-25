@@ -1,6 +1,7 @@
 package com.luqinx.xbinder.serialize
 
 import android.os.Parcel
+import android.os.Parcelable
 import com.luqinx.xbinder.ILightBinder
 import com.luqinx.xbinder.classloader
 import com.luqinx.xbinder.exceptionHandler
@@ -44,7 +45,22 @@ interface ParcelAdapter<T: Any> {
                         }
                     }
                 } ?: run {
-                    return parcel.readValue(classloader)
+                    if (this.isClassArray() && Parcelable::class.java.isAssignableFrom(this.componentType() as Class<*>)) {
+                        // 修复Parcel序列化Parcelable子类报错
+                        val size = parcel.readInt()
+                        return if (size > 0) {
+                            val arrayType = GenericAdapter.readInstance(parcel, component)
+                            val array = arrayType!!.componentType()!!.newArrayInstance<Any?>(size)
+                            for (i in 0 until size) {
+                                array?.set(i, parcel.readValue(classloader))
+                            }
+                            array
+                        } else {
+                            null
+                        }
+                    } else {
+                        return parcel.readValue(classloader)
+                    }
                 }
             }
         } catch (e: Throwable) {
@@ -132,7 +148,21 @@ interface ParcelAdapter<T: Any> {
                         this.writeInstance(parcel, value, basicComponent)
                 }
             } ?: run {
-                parcel.writeValue(value)
+                if (component.isClassArray() && Parcelable::class.java.isAssignableFrom(component.componentType() as Class<*>)) {
+                    // 修复Parcel序列化Parcelable子类报错
+                    val array = value as Array<*>?
+                    if (array != null) {
+                        parcel.writeInt(array.size)
+                        GenericAdapter.writeInstance(parcel, component, component)
+                        (value as Array<*>).forEach {
+                            parcel.writeValue(it)
+                        }
+                    } else {
+                        parcel.writeInt(-1)
+                    }
+                } else {
+                    parcel.writeValue(value)
+                }
             }
         } catch (e: Throwable) {
             exceptionHandler.handle(e)

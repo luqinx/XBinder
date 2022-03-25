@@ -20,4 +20,7 @@ interface LightBinderCallbackService: ILightBinder {
     fun remoteGc()
 
     fun invokeClickListener(listener: View.OnClickListener)
+
+    fun getLightBinder(): Callback?
+    fun getSimpleLightBinder(): SimpleCallback?
 }

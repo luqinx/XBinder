@@ -1,4 +1,6 @@
-package com.luqinx.xbinder.sample.simple
+package com.luqinx.xbinder.sample.simple.impl
+
+import com.luqinx.xbinder.sample.simple.PrimitiveTypeService
 
 /**
  * @author  qinchao

@@ -9,12 +9,13 @@ import com.luqinx.xbinder.sample.async.AsyncCallService
 import com.luqinx.xbinder.sample.async.impl.AsyncCallJavaServiceImpl
 import com.luqinx.xbinder.sample.async.impl.AsyncCallServiceImpl
 import com.luqinx.xbinder.sample.callback.LightBinderCallbackService
-import com.luqinx.xbinder.sample.callback.LightBinderCallbackServiceImpl
+import com.luqinx.xbinder.sample.callback.impl.LightBinderCallbackServiceImpl
 import com.luqinx.xbinder.sample.callback.SimpleCallbackService
-import com.luqinx.xbinder.sample.callback.SimpleCallbackServiceImpl
+import com.luqinx.xbinder.sample.callback.impl.SimpleCallbackServiceImpl
 import com.luqinx.xbinder.sample.invoketype.RemoteOnlyService
 import com.luqinx.xbinder.sample.invoketype.impl.RemoteOnlyServiceImpl
 import com.luqinx.xbinder.sample.simple.*
+import com.luqinx.xbinder.sample.simple.impl.*
 
 /**
  * @author  qinchao
@@ -39,10 +40,14 @@ class RemoteXBinderProvider: XBinderProvider() {
                 return when (clazz) {
                     PrimitiveTypeService::class.java -> PrimitiveTypeServiceImpl()
                     PrimitiveArrayTypeService::class.java -> PrimitiveArrayTypeServiceImpl()
+                    PrimitiveBoxArrayTypeService::class.java -> PrimitiveBoxArrayTypeServiceImpl()
+                    ParcelableTypeService::class.java -> ParcelableTypeServiceImpl()
+                    SerializableTypeService::class.java -> SerializableTypeServiceImpl()
+
                     AsyncCallService::class.java -> AsyncCallServiceImpl()
                     AsyncCallJavaService::class.java -> AsyncCallJavaServiceImpl()
                     BinderTypeService::class.java -> BinderTypeServiceImpl()
-                    PrimitiveBoxArrayTypeService::class.java -> PrimitiveBoxArrayTypeServiceImpl()
+
                     LightBinderCallbackService::class.java -> LightBinderCallbackServiceImpl()
                     SimpleCallbackService::class.java -> SimpleCallbackServiceImpl()
 

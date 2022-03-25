@@ -16,7 +16,7 @@ import com.luqinx.xbinder.sample.callback.SimpleCallbackService
 class TestInvokeTypeFragment: AmiSimpleListFragment() {
 
     private fun <T> getRemoteService(service: Class<T>, @InvokeType invokeType: Int): T {
-        return XBinder.getService(service, invokeType_ =  invokeType)
+        return XBinder.getService(service, processName = "com.luqinx.xbinder.sample.remote", invokeType_ =  invokeType)
     }
 
     override fun onItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {

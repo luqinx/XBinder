@@ -7,6 +7,10 @@ import android.widget.AdapterView
 import chao.app.ami.Ami
 import chao.app.ami.base.AmiSimpleListFragment
 import com.luqinx.xbinder.sample.App
+import com.luqinx.xbinder.sample.TimeAssert
+import com.luqinx.xbinder.sample.callback.Callback
+import com.luqinx.xbinder.sample.callback.SimpleCallback
+import com.luqinx.xbinder.sample.callback.SimpleCallbackService
 import java.lang.reflect.GenericArrayType
 import java.lang.reflect.ParameterizedType
 
@@ -34,13 +38,14 @@ class TestBinderArgumentFragment: AmiSimpleListFragment() {
     override fun getObjects(): Any {
         return arrayOf(
             "0. 接口类型",
-            "1. 简单泛型",
+            "1. 简单泛型(List<>, Map<>)",
             "2. Parcelable,Serialize类型",
             "3. 基本类型",
             "4. 基本类型数组",
             "5. 基本类型包装类数组",
             "6. 基本类型列表",
-            "7. 多维数组"
+            "7. 多维数组",
+            "8. 复杂泛型(规划中...)"
         )
 
     }
@@ -163,18 +168,47 @@ class TestBinderArgumentFragment: AmiSimpleListFragment() {
     }
 
     private fun testInterfaceTypes() {
-        TODO("Not yet implemented")
-        // XxxService
-        // XxxService: IBinderService
-        // XxxService: IBinderCallback
+        val service = App.getRemoteService(SimpleCallbackService::class.java)
+        val timeAssert = TimeAssert.startCountDown(2)
+        service.invokeCallback(object: Callback{
+            override fun onCallback() {
+                timeAssert.countDown()
+            }
+        })
+        service.invokeSimpleCallback(object: SimpleCallback{
+            override fun onCallback() {
+                timeAssert.countDown()
+            }
+        })
     }
 
     private fun testSerializeTypes() {
-        TODO("Not yet implemented")
-        // XxxArg: Serializable
-        // XxxArg: Parcelable
-        // array of XxxArg: Serializable
-        // array of XxxArg: Parcelable
+        val data1 = ParcelableData()
+        data1.s = "hello world"
+        data1.i = 1
+        data1.f = 2.3f
+        val data2 = ParcelableData()
+        data1.s = "hello xbinder"
+        data1.i = 4
+        data1.f = 5.6f
+        val data3 = ParcelableData()
+        data1.s = "hello luqinx"
+        data1.i = 7
+        data1.f = 8.9f
+        val datas = arrayOf(
+            data1, data2, data3
+        )
+        val dataList = listOf(
+            data1, data2, data3
+        )
+        val service = App.getRemoteService(ParcelableTypeService::class.java)
+        service.setParcelable(data1)
+        service.setParcelableArray(datas)
+//        service.setParcelableList(dataList)
+        TimeAssert.assert(service.getParcelable()!! == data1)
+        val newdata = service.getParcelableArray()
+        TimeAssert.assert(service.getParcelableArray().contentEquals(datas))
+//        assert(service.getParcelableList()!! == dataList)
     }
 
     private fun testSimpleGenericTypes() {
@@ -186,16 +220,16 @@ class TestBinderArgumentFragment: AmiSimpleListFragment() {
     private fun testPrimitiveTypes() {
         val service = App.getRemoteService(PrimitiveTypeService::class.java)
         service.run()
-        assert(service.getBoolean())
-        assert(service.getByte() == 'b'.toByte())
-        assert(service.getChar() == 'i')
-        assert(service.getShort() == 1.toShort())
-        assert(service.getInt() == 2)
-        assert(service.getLong() == 3L)
-        assert(service.getFloat() == 4.0f)
-        assert(service.getDouble() == 5.0)
-        assert(service.getString() == "6 String")
-        assert(service.getNull() == null)
+        TimeAssert.assert(service.getBoolean())
+        TimeAssert.assert(service.getByte() == 'b'.toByte())
+        TimeAssert.assert(service.getChar() == 'i')
+        TimeAssert.assert(service.getShort() == 1.toShort())
+        TimeAssert.assert(service.getInt() == 2)
+        TimeAssert.assert(service.getLong() == 3L)
+        TimeAssert.assert(service.getFloat() == 4.0f)
+        TimeAssert.assert(service.getDouble() == 5.0)
+        TimeAssert.assert(service.getString() == "6 String")
+        TimeAssert.assert(service.getNull() == null)
         service.setBoolean(true)
         service.setByte("10".toByte())
         service.setChar(11.toChar())

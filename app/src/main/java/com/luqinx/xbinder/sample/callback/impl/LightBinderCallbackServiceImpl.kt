@@ -1,7 +1,10 @@
-package com.luqinx.xbinder.sample.callback
+package com.luqinx.xbinder.sample.callback.impl
 
 import android.view.View
 import chao.java.tools.servicepool.annotation.Service
+import com.luqinx.xbinder.sample.callback.Callback
+import com.luqinx.xbinder.sample.callback.LightBinderCallbackService
+import com.luqinx.xbinder.sample.callback.SimpleCallback
 
 /**
  * @author  qinchao
@@ -40,6 +43,24 @@ class LightBinderCallbackServiceImpl: LightBinderCallbackService {
     override fun invokeClickListener(listener: View.OnClickListener) {
         println("invokeClickListener invoked")
         listener.onClick(null)
+    }
+
+    override fun getLightBinder(): Callback {
+        return object: Callback{
+            override fun onCallback() {
+                println("LightBinder return onCallback invoked!!")
+            }
+
+        }
+    }
+
+    override fun getSimpleLightBinder(): SimpleCallback {
+        return object: SimpleCallback{
+            override fun onCallback() {
+                println("SimpleCallback return onCallback invoked!!")
+            }
+
+        }
     }
 
     override fun unregisterCallback(callback: Callback) {

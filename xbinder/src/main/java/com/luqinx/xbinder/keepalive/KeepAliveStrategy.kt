@@ -6,7 +6,7 @@ import android.content.ServiceConnection
 import android.os.IBinder
 import android.os.Process
 import com.luqinx.xbinder.XBinderProvider
-import com.luqinx.xbinder.context
+import com.luqinx.xbinder.contextService
 import com.luqinx.xbinder.interactiveProcessMap
 import com.luqinx.xbinder.logger
 /**
@@ -55,12 +55,12 @@ enum class KeepAliveStrategy {
             return
         }
         val intent = Intent(action)
-        context.startService(intent)
-        context.bindService(intent, object: ServiceConnection {
+        contextService.startService(intent)
+        contextService.bindService(intent, object: ServiceConnection {
             override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
                 service?.linkToDeath( {
-                    context.startService(intent)
-                    context.bindService(intent, this, 0)
+                    contextService.startService(intent)
+                    contextService.bindService(intent, this, 0)
                 },0)
             }
 

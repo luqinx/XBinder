@@ -20,7 +20,7 @@ internal object ChannelProvider {
 
                 val start = System.currentTimeMillis()
                 val uri = Uri.parse("content://$process")
-                val cursor = context.contentResolver.query(uri, null, null, null, null)
+                val cursor = contextService.queryProvider(uri)
                 var channelBinder: ChannelBinder? = null
                 cursor?.apply {
                     extras.classLoader = classloader

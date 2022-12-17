@@ -35,7 +35,7 @@ abstract class XBinderProvider : ContentProvider() {
             get() = initProcessName()!!
 
         val applicationId: String
-            get() = context.packageName
+            get() = contextService.packageName()
 
         private var mProcessName: String? = null
 
@@ -47,8 +47,7 @@ abstract class XBinderProvider : ContentProvider() {
                 mProcessName = Application.getProcessName()
             } else {
                 try {
-                    val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-                    val runningApps = am.runningAppProcesses
+                    val runningApps = contextService.runningAppProcesses()
                     if (runningApps != null) {
                         for (processInfo in runningApps) {
                             if (processInfo.pid == Process.myPid()) {
@@ -57,7 +56,7 @@ abstract class XBinderProvider : ContentProvider() {
                         }
                     }
                     if (TextUtils.isEmpty(mProcessName)) {
-                        mProcessName = context.packageName
+                        mProcessName = contextService.packageName()
                     }
                 } catch (e: Exception) {
                     exceptionHandler.handle(e)
@@ -72,13 +71,13 @@ abstract class XBinderProvider : ContentProvider() {
 
     override fun onCreate(): Boolean {
         logger.d(message = "provider $javaClass onCreate")
-        com.luqinx.xbinder.context = context!!
+        applicationContext = context
         val options = onInitOptions(context)
         exceptionHandler = options.exceptionHandler
         debuggable = options.debuggable
         invokeThreshold = options.invokeThreshold
         classloader = options.classLoader
-        binderDeathHandler = options.binderDeathHandler ?: BinderDeathHandler.IGNORE
+        binderDeathHandler = options.binderDeathHandler
         logger = options.logger
         ClassAdapter.avoidReflection(avoidReflectionClasses())
         XBinder.xbinderReady = true

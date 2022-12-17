@@ -22,7 +22,9 @@ class XBinderInitOptions {
 
     var classLoader: ClassLoader = javaClass.classLoader!!
 
-    val binderDeathHandler: BinderDeathHandler? = BinderDeathHandler.IGNORE
+    val binderDeathHandler: BinderDeathHandler = BinderDeathHandler.IGNORE
+
+
 
     var logger: ILogger = ILogger.SimpleLogger
 

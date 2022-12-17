@@ -21,7 +21,9 @@ internal const val CORE_METHOD_UNREGISTER_INSTANCE = "_\$unregisterInstance_"
 
 
 
-internal lateinit var context: Context
+internal var applicationContext: Context? = null
+
+internal var contextService: ContextService = ContextService.DefaultContextService()
 
 internal val thisProcess by lazy { XBinderProvider.processName }
 

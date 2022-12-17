@@ -26,10 +26,12 @@ class FunctionListFragment: AmiSimpleListFragment() {
 
     override fun getObjects(): Any {
         return arrayOf(
-            "数据类型",
-            "oneway | async",
-            "轻量binder(接口)",
-            "降级策略",
+            "0. 数据类型",
+            "1. oneway | async",
+            "2. 轻量binder(接口)",
+            "3. 降级策略",
+            "4. 自定义序列化ParcelAdapter(demo完善中...)",
+            "5. 进程死亡和重启通知(规划中...)"
         )
     }
 }

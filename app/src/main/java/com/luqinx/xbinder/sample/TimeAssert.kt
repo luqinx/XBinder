@@ -41,7 +41,11 @@ class TimeAssert {
             }
         }
 
-        fun startCountDown(_countDown: Int = -1, message: String = "", timeout: Long = 500): TimeAssert {
+        fun startCountDown(
+            _countDown: Int = -1,
+            message: String = "Assertion failed",
+            timeout: Long = 500
+        ): TimeAssert {
             val assert = TimeAssert()
             assert.startCountDown(_countDown, message, timeout)
             return assert

@@ -5,13 +5,13 @@
 buildscript {
     ext.kotlin_version = "1.4.32"
     repositories {
+        maven { url "https://maven.aliyun.com/repository/central" }
+        maven { url "https://maven.aliyun.com/repository/public" }
         mavenCentral()
-//        maven { url "https://maven.aliyun.com/repository/central" }
-//        maven { url "https://maven.aliyun.com/repository/public" }
         google()
     }
     dependencies {
-        classpath "com.android.tools.build:gradle:4.0.1"
+        classpath "com.android.tools.build:gradle:4.0.2"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath 'com.vanniktech:gradle-maven-publish-plugin:0.17.0'
 //        classpath 'io.github.luqinx:autoservice:1.7.0'
@@ -24,9 +24,9 @@ buildscript {
 
 allprojects {
     repositories {
+        maven { url "https://maven.aliyun.com/repository/central" }
+        maven { url "https://maven.aliyun.com/repository/public" }
         mavenCentral()
-//        maven { url "https://maven.aliyun.com/repository/central" }
-//        maven { url "https://maven.aliyun.com/repository/public" }
 
         google()
         mavenLocal()

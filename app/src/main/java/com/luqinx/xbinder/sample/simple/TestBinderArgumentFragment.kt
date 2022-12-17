@@ -198,6 +198,7 @@ class TestBinderArgumentFragment: AmiSimpleListFragment() {
         val datas = arrayOf(
             data1, data2, data3
         )
+        //todo List<>
         val dataList = listOf(
             data1, data2, data3
         )
@@ -206,7 +207,6 @@ class TestBinderArgumentFragment: AmiSimpleListFragment() {
         service.setParcelableArray(datas)
 //        service.setParcelableList(dataList)
         TimeAssert.assert(service.getParcelable()!! == data1)
-        val newdata = service.getParcelableArray()
         TimeAssert.assert(service.getParcelableArray().contentEquals(datas))
 //        assert(service.getParcelableList()!! == dataList)
     }

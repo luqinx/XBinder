@@ -69,4 +69,6 @@ dependencies {
     implementation 'io.github.luqinx:spa:1.7.0'
 
     implementation project(":xbinder")
+
+    implementation 'com.mixpanel.android:mixpanel-android:6.+'
 }

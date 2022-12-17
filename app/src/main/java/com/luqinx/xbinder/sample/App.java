@@ -4,6 +4,7 @@ import android.app.Application;
 
 import com.luqinx.xbinder.ILightBinder;
 import com.luqinx.xbinder.XBinder;
+import com.mixpanel.android.mpmetrics.MixpanelAPI;
 
 /**
  * @author qinchao
@@ -17,6 +18,8 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         sApp = this;
+        MixpanelAPI mixpanel = MixpanelAPI.getInstance(this, "6e13fa93f531cef804521621b628c513");
+
         TimeAssert.Companion.start();
     }
 

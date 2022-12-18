@@ -1,5 +1,7 @@
 package com.luqinx.xbinder
 
+import androidx.annotation.Keep
+
 /**
  *
  *  !!! don't override the methods in this class
@@ -10,6 +12,7 @@ package com.luqinx.xbinder
  *
  * @since 2022/1/2
  */
+@Keep
 interface IProxyBehaviors {
     /**
      *  !!! don't override this method

@@ -32,7 +32,7 @@ interface ContextService {
         ensureContext()
         applicationContext!!.let {
             val am = it.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-            return am.runningAppProcesses;
+            return am.runningAppProcesses
         }
     }
 

@@ -22,31 +22,31 @@ buildscript {
     }
 }
 
-allprojects {
-    repositories {
-        maven { url "https://maven.aliyun.com/repository/central" }
-        maven { url "https://maven.aliyun.com/repository/public" }
-        mavenCentral()
-
-        google()
-        mavenLocal()
-    }
-
-    //Support @JvmDefault
-    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
-        kotlinOptions {
-            freeCompilerArgs = ['-Xjvm-default=enable'] //enable or compatibility
-            jvmTarget = "1.8"
-        }
-    }
-
-    plugins.withId("com.vanniktech.maven.publish") {
-        mavenPublish {
-            sonatypeHost = "S01"
-        }
-    }
-
-}
+//allprojects {
+//    repositories {
+//        maven { url "https://maven.aliyun.com/repository/central" }
+//        maven { url "https://maven.aliyun.com/repository/public" }
+//        mavenCentral()
+//
+//        google()
+//        mavenLocal()
+//    }
+//
+//    //Support @JvmDefault
+//    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+//        kotlinOptions {
+//            freeCompilerArgs = ['-Xjvm-default=enable'] //enable or compatibility
+//            jvmTarget = "1.8"
+//        }
+//    }
+//
+//    plugins.withId("com.vanniktech.maven.publish") {
+//        mavenPublish {
+//            sonatypeHost = "S01"
+//        }
+//    }
+//
+//}
 
 
 

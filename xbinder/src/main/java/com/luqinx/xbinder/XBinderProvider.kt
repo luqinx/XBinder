@@ -1,14 +1,11 @@
 package com.luqinx.xbinder
 
-import android.app.ActivityManager
-import android.app.Application
 import android.content.ContentProvider
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.database.MatrixCursor
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.os.Process
@@ -43,24 +40,21 @@ abstract class XBinderProvider : ContentProvider() {
             if (!TextUtils.isEmpty(mProcessName)) {
                 return mProcessName
             }
-            if (Build.VERSION.SDK_INT >= 28) {
-                mProcessName = Application.getProcessName()
-            } else {
-                try {
-                    val runningApps = contextService.runningAppProcesses()
-                    if (runningApps != null) {
-                        for (processInfo in runningApps) {
-                            if (processInfo.pid == Process.myPid()) {
-                                mProcessName = processInfo.processName
-                            }
+
+            try {
+                val runningApps = contextService.runningAppProcesses()
+                if (runningApps != null) {
+                    for (processInfo in runningApps) {
+                        if (processInfo.pid == Process.myPid()) {
+                            mProcessName = processInfo.processName
                         }
                     }
-                    if (TextUtils.isEmpty(mProcessName)) {
-                        mProcessName = contextService.packageName()
-                    }
-                } catch (e: Exception) {
-                    exceptionHandler.handle(e)
                 }
+                if (TextUtils.isEmpty(mProcessName)) {
+                    mProcessName = contextService.packageName()
+                }
+            } catch (e: Exception) {
+                exceptionHandler.handle(e)
             }
             mProcessName = mProcessName?.replace(":", ".")
             return mProcessName
@@ -73,18 +67,20 @@ abstract class XBinderProvider : ContentProvider() {
         logger.d(message = "provider $javaClass onCreate")
         applicationContext = context
         val options = onInitOptions(context)
-        exceptionHandler = options.exceptionHandler
-        debuggable = options.debuggable
-        invokeThreshold = options.invokeThreshold
-        classloader = options.classLoader
-        binderDeathHandler = options.binderDeathHandler
-        logger = options.logger
+        if (options != null) {
+            exceptionHandler = options.exceptionHandler
+            debuggable = options.debuggable
+            invokeThreshold = options.invokeThreshold
+            classloader = options.classLoader
+            binderDeathHandler = options.binderDeathHandler ?: BinderDeathHandler.IGNORE
+            logger = options.logger
+        }
         ClassAdapter.avoidReflection(avoidReflectionClasses())
         XBinder.xbinderReady = true
         return false
     }
 
-    abstract fun onInitOptions(context: Context?): XBinderInitOptions
+    abstract fun onInitOptions(context: Context?): XBinderInitOptions?
 
     protected fun registerTypeAdapter(type: Class<*>, adapter: ParcelAdapter<*>) {
         XBinder.registerTypeAdapter(type, adapter)

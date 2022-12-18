@@ -21,9 +21,9 @@ internal const val CORE_METHOD_UNREGISTER_INSTANCE = "_\$unregisterInstance_"
 
 
 
-internal var applicationContext: Context? = null
+var applicationContext: Context? = null
 
-internal var contextService: ContextService = ContextService.DefaultContextService()
+var contextService: ContextService = ContextService.DefaultContextService()
 
 internal val thisProcess by lazy { XBinderProvider.processName }
 
@@ -41,7 +41,7 @@ internal var serviceFinders: ArrayList<IServiceFinder> = arrayListOf()
 
 internal var exceptionHandler: XBinderExceptionHandler = XBinderExceptionHandler.SimpleHandler
 
-internal var debuggable = false
+var debuggable = false
 
 private val noOpHandler = InvocationHandler { _, _, _ -> null }
 

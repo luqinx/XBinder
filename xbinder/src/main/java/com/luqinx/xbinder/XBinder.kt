@@ -99,6 +99,7 @@ object XBinder {
                 processName.replaceFirst(":", ".")
             }
         }
+        logger.d(message =  "current process name: ${currentProcessName()}")
         val invokeType = if (realProcessName == currentProcessName()) {
             if (invokeType_ == InvokeType.REMOTE_ONLY) {
                 throw java.lang.IllegalArgumentException("check your process name please")

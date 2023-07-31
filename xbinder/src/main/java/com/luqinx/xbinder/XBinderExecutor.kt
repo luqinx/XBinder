@@ -39,6 +39,8 @@ object XBinderExecutor: Executor {
 
 
     override fun execute(command: Runnable?) {
-        TODO("Not yet implemented")
+        command?.let {
+            asyncCallExecutor.execute(it)
+        }
     }
 }

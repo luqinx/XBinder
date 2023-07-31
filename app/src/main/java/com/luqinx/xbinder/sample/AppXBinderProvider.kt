@@ -2,6 +2,10 @@ package com.luqinx.xbinder.sample
 
 import android.content.Context
 import com.luqinx.xbinder.*
+import com.luqinx.xbinder.sample.invoketype.LocalFirstService2
+import com.luqinx.xbinder.sample.invoketype.impl.LocalFirstService2Impl
+import com.luqinx.xbinder.sample.invoketype.impl.LocalFirstServiceImpl
+import java.lang.IllegalArgumentException
 
 /**
  * @author  qinchao
@@ -23,7 +27,11 @@ class AppXBinderProvider: XBinderProvider() {
                 consTypes: Array<*>?,
                 constArgs: Array<*>?
             ): ILightBinder? {
-                return null
+                return when(clazz) {
+                    LocalFirstServiceImpl::class.java -> LocalFirstServiceImpl()
+                    LocalFirstService2Impl::class.java -> LocalFirstService2Impl()
+                    else -> null
+                }
             }
         })
 

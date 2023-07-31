@@ -7,4 +7,6 @@ package com.luqinx.xbinder.sample.invoketype
  */
 interface LocalFirstService1: BaseService {
     /** 此服务本地存在, 不会走Remote**/
+
+    fun getInt(): Int
 }

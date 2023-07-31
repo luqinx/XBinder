@@ -4,6 +4,7 @@ import android.app.Application;
 
 import com.luqinx.xbinder.ILightBinder;
 import com.luqinx.xbinder.XBinder;
+import com.luqinx.xbinder.annotation.InvokeType;
 import com.mixpanel.android.mpmetrics.MixpanelAPI;
 
 /**
@@ -31,6 +32,12 @@ public class App extends Application {
 //        return XBinder.getService(binderClass, BuildConfig.APPLICATION_ID); // 同下面等价
 //        return XBinder.getService(binderClass, "");   // 同下面等价
         return XBinder.getService(binderClass); // 默认主进程
+    }
+
+    public static <T extends ILightBinder> T getAppLocalService(Class<T> binderClass) {
+//        return XBinder.getService(binderClass, BuildConfig.APPLICATION_ID); // 同下面等价
+//        return XBinder.getService(binderClass, "");   // 同下面等价
+        return XBinder.getService(binderClass,"", null, null, null, InvokeType.LOCAL_FIRST); // 默认主进程
     }
 
     public static Application getApp() {

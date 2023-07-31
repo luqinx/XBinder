@@ -7,6 +7,7 @@ import chao.app.ami.base.AmiSimpleListFragment
 import com.luqinx.xbinder.sample.async.TestAsyncOnewayFragment
 import com.luqinx.xbinder.sample.callback.LightBinderServiceFragment
 import com.luqinx.xbinder.sample.invoketype.TestInvokeTypeFragment
+import com.luqinx.xbinder.sample.local.TestLocalServiceFragment
 import com.luqinx.xbinder.sample.simple.TestBinderArgumentFragment
 
 /**
@@ -21,6 +22,9 @@ class FunctionListFragment: AmiSimpleListFragment() {
             1 -> UI.show(context, TestAsyncOnewayFragment::class.java)
             2 -> UI.show(context, LightBinderServiceFragment::class.java)
             3 -> UI.show(context, TestInvokeTypeFragment::class.java)
+
+            6 -> UI.show(context, TestLocalServiceFragment::class.java)
+
         }
     }
 
@@ -31,7 +35,8 @@ class FunctionListFragment: AmiSimpleListFragment() {
             "2. 轻量binder(接口)",
             "3. 降级策略",
             "4. 自定义序列化ParcelAdapter(demo完善中...)",
-            "5. 进程死亡和重启通知(规划中...)"
+            "5. 进程死亡和重启通知(规划中...)",
+            "6. 本地服务"
         )
     }
 }

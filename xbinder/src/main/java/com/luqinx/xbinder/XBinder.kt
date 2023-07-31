@@ -23,7 +23,7 @@ object XBinder {
         constructorArgs: Array<*>? = null,
         defService: T? = null,
         @InvokeType invokeType_: Int = InvokeType.REMOTE_ONLY
-    ): T {
+    ): T? {
         return getServiceInner(
             serviceClass,
             processName,
@@ -46,7 +46,7 @@ object XBinder {
         constructorArgs: Array<*>? = null,
         defService: T? = null,
         @InvokeType invokeType_: Int = InvokeType.REMOTE_ONLY
-    ): T {
+    ): T? {
         // not complete
         return getServiceInner(
             serviceClass,
@@ -76,7 +76,7 @@ object XBinder {
         constructorArgs: Array<*>? = null,
         defService: T? = null,
         @InvokeType invokeType_: Int = InvokeType.REMOTE_ONLY
-    ): T {
+    ): T? {
         if (constructorArgs != null && constructorTypes != null && constructorArgs.size != constructorTypes.size) {
             throw IllegalArgumentException("constructor arguments' size not match: args{${constructorArgs}}, types{${constructorTypes}}")
         }
@@ -107,6 +107,22 @@ object XBinder {
         } else {
             invokeType_
         }
+
+        val localCaller =
+            if (invokeType == InvokeType.LOCAL_ONLY || invokeType == InvokeType.LOCAL_FIRST) {
+                ServiceProvider.doFind(
+                    processName,
+                    0,
+                    serviceClass,
+                    constructorTypes,
+                    constructorArgs
+                ) as T? ?: defService
+            } else null
+
+        if (invokeType == InvokeType.LOCAL_ONLY || localCaller != null) {
+            return localCaller
+        }
+
         return ServiceProxyFactory.newServiceProxy(
             NewServiceOptions(serviceClass, realProcessName)
                 .constructorTypes(constructorTypes)

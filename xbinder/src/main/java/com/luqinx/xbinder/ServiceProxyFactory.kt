@@ -58,62 +58,59 @@ internal object ServiceProxyFactory {
                         )
                     }
 
-                    override fun onInvoke(source: T?, method: Method?, args: Array<Any?>?): Any? {
+                    override fun onInvoke(source: T?, method: Method, args: Array<Any?>?): Any? {
 //                        Refined.start()
 //                        logger.d(message = "onInvoke: ${method?.name}(${args?.contentDeepToString()})")
 //                        Refined.finish("logger onInvoke ")
 
-                        return method?.apply {
-                            val remoteCaller: Any = when (declaringClass) {
-                                Any::class.java -> objectBehaviors
-                                IProxyBehaviors::class.java -> LOCAL_BEHAVIORS
-                                else -> BinderBehaviors
+                        val remoteCaller: Any = when (method.declaringClass) {
+                            Any::class.java -> objectBehaviors
+                            IProxyBehaviors::class.java -> LOCAL_BEHAVIORS
+                            else -> BinderBehaviors
+                        }
+
+                        fun localInvoker(): T? = ServiceProvider.doFind(
+                            options.processName,
+                            objectBehaviors.hashCode(),
+                            options.serviceClass,
+                            options.constructorTypes,
+                            options.constructorArgs
+                        ) as T?
+
+                        var caller: Any? = when (invokeType) {
+                            InvokeType.LOCAL_ONLY -> localInvoker()
+                            InvokeType.LOCAL_FIRST -> localInvoker() ?: remoteCaller
+                            InvokeType.REMOTE_ONLY -> remoteCaller
+                            InvokeType.REMOTE_FIRST -> remoteCaller
+                            else -> {
+                                throw IllegalArgumentException("unknown invoke type $invokeType")
                             }
+                        } ?: options.defService
 
-                            fun localInvoker(): T? = ServiceProvider.doFind(
-                                options.processName,
-                                objectBehaviors.hashCode(),
-                                options.serviceClass,
-                                options.constructorTypes,
-                                options.constructorArgs
-                            ) as T?
-
-                            var caller = when (invokeType) {
-                                InvokeType.LOCAL_ONLY -> localInvoker()
-                                InvokeType.LOCAL_FIRST -> localInvoker() ?: remoteCaller
-                                InvokeType.REMOTE_ONLY -> remoteCaller
-                                InvokeType.REMOTE_FIRST -> remoteCaller
-                                else -> {
-                                    throw IllegalArgumentException("unknown invoke type $invokeType")
+                        if (caller == BinderBehaviors) {
+                            try {
+                                return BinderBehaviors.invokeMethod(
+                                    serviceClass, //
+                                    method,
+                                    args,
+                                    options,
+                                    objectBehaviors.hashCode()
+                                )
+                            } catch (e: XBinderException) {
+                                if (e.code != BinderInvoker.ERROR_CODE_REMOTE_NOT_FOUND) {
+                                    caller = localInvoker() ?: options.defService
+                                } else {
+                                    throw e
                                 }
-                            } ?: options.defService ?: noOpService(options.serviceClass)
-
-                            if (caller == BinderBehaviors) {
-                                try {
-                                    return BinderBehaviors.invokeMethod(
-                                        serviceClass, //
-                                        method,
-                                        args,
-                                        options,
-                                        objectBehaviors.hashCode()
-                                    )
-                                } catch (e: XBinderException) {
-                                    if (e.code != BinderInvoker.ERROR_CODE_REMOTE_NOT_FOUND) {
-                                        caller =
-                                            localInvoker() ?: options.defService ?: noOpService(
-                                                options.serviceClass
-                                            )
-                                    } else {
-                                        throw e
-                                    }
-                                }
-                            }
-                            args?.let {
-                                return invoke(caller, *it)
-                            } ?: run {
-                                return invoke(caller)
                             }
                         }
+
+                        if (caller == null) return null
+
+                        return if (args != null) {
+                            method.invoke(caller, *args)
+                        } else method.invoke(caller)
+
                     }
 
                 }).newInstance()!!

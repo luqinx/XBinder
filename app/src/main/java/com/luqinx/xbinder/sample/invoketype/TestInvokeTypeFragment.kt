@@ -15,7 +15,7 @@ import com.luqinx.xbinder.sample.callback.SimpleCallbackService
  */
 class TestInvokeTypeFragment: AmiSimpleListFragment() {
 
-    private fun <T> getRemoteService(service: Class<T>, @InvokeType invokeType: Int): T {
+    private fun <T> getRemoteService(service: Class<T>, @InvokeType invokeType: Int): T? {
         return XBinder.getService(service, processName = "com.luqinx.xbinder.sample.remote", invokeType_ =  invokeType)
     }
 
@@ -25,7 +25,7 @@ class TestInvokeTypeFragment: AmiSimpleListFragment() {
                 getRemoteService(
                     SimpleCallbackService::class.java,
                     InvokeType.REMOTE_ONLY
-                ).invokeSimpleCallback(object : SimpleCallback {
+                )!!.invokeSimpleCallback(object : SimpleCallback {
                     override fun onCallback() {
                         println("remote only callback invoked(${Thread.currentThread().name}")
                     }
@@ -35,7 +35,7 @@ class TestInvokeTypeFragment: AmiSimpleListFragment() {
                 getRemoteService(
                     SimpleCallbackService::class.java,
                     InvokeType.REMOTE_FIRST
-                ).invokeSimpleCallback(object : SimpleCallback {
+                )!!.invokeSimpleCallback(object : SimpleCallback {
                     override fun onCallback() {
                         println("remote first & exist callback invoked(${Thread.currentThread().name})")
                     }

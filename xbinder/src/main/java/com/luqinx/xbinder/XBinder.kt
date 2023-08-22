@@ -139,6 +139,12 @@ object XBinder {
         serviceFinders.add(serviceFinder)
     }
 
+    fun addChannelBinder(process: String, binder: ChannelBinder) {
+        ChannelProvider.addBinderChannel(process, binder)
+    }
+
+    fun coreChannel() = ChannelProvider.coreChannel
+
     @JvmStatic
     fun currentProcessName(): String {
         return XBinderProvider.processName

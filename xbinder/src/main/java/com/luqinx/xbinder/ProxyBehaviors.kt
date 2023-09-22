@@ -10,7 +10,7 @@ import java.lang.reflect.Type
 internal class ProxyBehaviors(
     private val remoteProcessName: String,
     private val serviceClass: Class<*>,
-    private val delegateId: Int,
+    private val delegateId: String,
     private var _instanceId: String?
 ): IProxyBehaviors {
 

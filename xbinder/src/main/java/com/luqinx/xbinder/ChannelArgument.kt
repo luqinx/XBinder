@@ -9,6 +9,7 @@ import java.lang.IllegalArgumentException
 import java.lang.reflect.GenericArrayType
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
+import java.util.UUID
 
 /**
  * @author  qinchao
@@ -53,9 +54,11 @@ internal class ChannelArgument() {
 
     internal lateinit var fromProcess: String
 
-    internal var delegateId: Int = -1
+    internal var delegateId: String? = null
 
     internal var instanceId: String? = null
+
+    internal val uuid = UUID.randomUUID().toString()
 
     internal val argTypes: Array<Class<*>>?
         get() {
@@ -82,7 +85,7 @@ internal class ChannelArgument() {
         returnType = parcel.readString()!!
         asyncCall = parcel.readInt() != 0
         onewayCall = parcel.readInt() != 0
-        delegateId = parcel.readInt()
+        delegateId = parcel.readString()
         instanceId = parcel.readString()
 
         val paramsCount = parcel.readInt()
@@ -101,7 +104,7 @@ internal class ChannelArgument() {
         parcel.writeString(returnType)
         parcel.writeInt(if (asyncCall) 1 else 0)
         parcel.writeInt(if (onewayCall) 1 else 0)
-        parcel.writeInt(delegateId)
+        parcel.writeString(delegateId)
         parcel.writeString(instanceId)
         try {
             val paramsCount = genericArgTypes?.size ?: 0

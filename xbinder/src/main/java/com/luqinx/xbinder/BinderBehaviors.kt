@@ -19,7 +19,7 @@ internal object BinderBehaviors {
         method: Method,
         args: Array<Any?>?,
         options: NewServiceOptions<T>,
-        delegateId: Int
+        delegateId: String
     ): Any? {
         val rpcArgument = ChannelArgument()
         rpcArgument.fromProcess = thisProcess

@@ -80,13 +80,13 @@ internal object ChannelProvider {
                         val start = System.currentTimeMillis()
                         clazzImpl = ServiceProvider.doFind(
                             fromProcess,
-                            delegateId,
+                            delegateId!!,
                             clazz.toClass()!!,
                             genericArgTypes,
                             args
                         )
                         result.returnValue = clazzImpl?.let {
-                            "${javaClass}-${hashCode()}"
+                            "${javaClass}-${uuid}"
                         } ?: run {
                             null
                         }
@@ -99,9 +99,18 @@ internal object ChannelProvider {
                     rpcArgument.run {
                         clazzImpl = if (instanceId != null) {
                             ServiceProvider.getServiceInstance(fromProcess, instanceId!!)
-                        } else {
-                            ServiceProvider.getServiceImpl(fromProcess, delegateId)
-                        }
+                        } else if (delegateId != null) {
+                            ServiceProvider.getServiceImpl(fromProcess, delegateId!!) ?: run {
+                                // find again if the process is restart
+                                ServiceProvider.doFind(
+                                    fromProcess,
+                                    delegateId!!,
+                                    clazz.toClass()!!,
+                                    genericArgTypes,
+                                    args
+                                )
+                            }
+                        } else null
                     }
                 }
             }
@@ -130,7 +139,7 @@ internal object ChannelProvider {
                 }
             } catch (e: Throwable) {
                 result.succeed = false
-                result.errMessage = e.message
+                result.errMessage = "${e.javaClass} ${e.message}"
                 exceptionHandler.handle(e)
             }
             return result

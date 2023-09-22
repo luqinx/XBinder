@@ -5,13 +5,13 @@ import com.luqinx.interceptor.Interceptor
 
 internal object ServiceProvider {
 
-    private val serviceImplCache = hashMapOf<String, SparseArray<ILightBinder>>()
+    private val serviceImplCache = hashMapOf<String, HashMap<String, ILightBinder>>()
 
     private val instanceCache = hashMapOf<String, HashMap<String,ILightBinder>>()
 
     fun doFind(
         fromProcess: String,
-        delegateId: Int,
+        delegateId: String,
         clazz: Class<*>,
         consTypes: Array<*>?,
         constArgs: Array<*>?
@@ -40,13 +40,12 @@ internal object ServiceProvider {
                             null
                         }
                     }
-                    if (remoteService != null) {
-                        if (serviceImplCache[fromProcess] == null) {
-                            serviceImplCache[fromProcess] = SparseArray()
-                        }
-                        serviceImplCache[fromProcess]!!.put(delegateId, remoteService)
-                        return@forEach
+                    val service = remoteService ?: return@forEach
+                    if (serviceImplCache[fromProcess] == null) {
+                        serviceImplCache[fromProcess] = HashMap()
                     }
+                    serviceImplCache[fromProcess]!!.put(delegateId, service)
+                    return@forEach
                 }
             }
             return remoteService
@@ -79,7 +78,7 @@ internal object ServiceProvider {
         }
     }
 
-    fun getServiceImpl(fromProcess: String, delegateId: Int): ILightBinder? {
+    fun getServiceImpl(fromProcess: String, delegateId: String): ILightBinder? {
         return serviceImplCache[fromProcess]?.get(delegateId)
     }
 

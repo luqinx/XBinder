@@ -53,64 +53,68 @@ internal object ServiceProxyFactory {
                         ProxyBehaviors(
                             processName,
                             serviceClass,
-                            objectBehaviors.hashCode(),
+                            objectBehaviors.uuid,
                             options.instanceId
                         )
                     }
 
                     override fun onInvoke(source: T?, method: Method, args: Array<Any?>?): Any? {
-//                        Refined.start()
-//                        logger.d(message = "onInvoke: ${method?.name}(${args?.contentDeepToString()})")
-//                        Refined.finish("logger onInvoke ")
+                        Refined.start()
+                        logger.d(message = "onInvoke: ${method.name}(${args?.contentDeepToString()})")
+                        Refined.finish("logger onInvoke ")
 
-                        val remoteCaller: Any = when (method.declaringClass) {
-                            Any::class.java -> objectBehaviors
-                            IProxyBehaviors::class.java -> LOCAL_BEHAVIORS
-                            else -> BinderBehaviors
-                        }
-
-                        fun localInvoker(): T? = ServiceProvider.doFind(
-                            options.processName,
-                            objectBehaviors.hashCode(),
-                            options.serviceClass,
-                            options.constructorTypes,
-                            options.constructorArgs
-                        ) as T?
-
-                        var caller: Any? = when (invokeType) {
-                            InvokeType.LOCAL_ONLY -> localInvoker()
-                            InvokeType.LOCAL_FIRST -> localInvoker() ?: remoteCaller
-                            InvokeType.REMOTE_ONLY -> remoteCaller
-                            InvokeType.REMOTE_FIRST -> remoteCaller
-                            else -> {
-                                throw IllegalArgumentException("unknown invoke type $invokeType")
+                        return method.apply {
+                            val remoteCaller: Any = when (declaringClass) {
+                                Any::class.java -> objectBehaviors
+                                IProxyBehaviors::class.java -> LOCAL_BEHAVIORS
+                                else -> BinderBehaviors
                             }
-                        } ?: options.defService
 
-                        if (caller == BinderBehaviors) {
-                            try {
-                                return BinderBehaviors.invokeMethod(
-                                    serviceClass, //
-                                    method,
-                                    args,
-                                    options,
-                                    objectBehaviors.hashCode()
-                                )
-                            } catch (e: XBinderException) {
-                                if (e.code != BinderInvoker.ERROR_CODE_REMOTE_NOT_FOUND) {
-                                    caller = localInvoker() ?: options.defService
-                                } else {
-                                    throw e
+                            var caller = when (invokeType) {
+                                InvokeType.REMOTE_ONLY -> remoteCaller
+                                InvokeType.REMOTE_FIRST -> remoteCaller
+                                else -> {
+                                    throw IllegalArgumentException("unknown invoke type $invokeType")
                                 }
                             }
+
+                            if (caller == BinderBehaviors) {
+                                try {
+                                    return BinderBehaviors.invokeMethod(
+                                        serviceClass, //
+                                        method,
+                                        args,
+                                        options,
+                                        objectBehaviors.uuid
+                                    )
+                                } catch (e: XBinderException) {
+                                    if (e.code != BinderInvoker.ERROR_CODE_REMOTE_NOT_FOUND) {
+                                        val localInvoker: T? = ServiceProvider.doFind(
+                                            options.processName,
+                                            objectBehaviors.uuid,
+                                            options.serviceClass,
+                                            options.constructorTypes,
+                                            options.constructorArgs
+                                        ) as T?
+                                        caller =
+                                            localInvoker ?: options.defService ?: noOpService(
+                                                options.serviceClass
+                                            )
+                                    } else {
+                                        throw e
+                                    }
+                                }
+                            } else if (declaringClass == IProxyBehaviors::class.java && (caller !is IProxyBehaviors)) {
+                                return null
+                            }
+                            logger.d(message = "caller is $caller, is instance of IProxyBehaviors? ${caller is IProxyBehaviors}")
+                            logger.d(message = "$this declaringClass is $declaringClass");
+
+                            return if (args != null) {
+                                method.invoke(caller, *args)
+                            } else method.invoke(caller)
+
                         }
-
-                        if (caller == null) return null
-
-                        return if (args != null) {
-                            method.invoke(caller, *args)
-                        } else method.invoke(caller)
-
                     }
 
                 }).newInstance()!!

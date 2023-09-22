@@ -4,6 +4,7 @@ import com.luqinx.xbinder.annotation.InvokeType
 import com.luqinx.xbinder.serialize.AdapterManager
 import com.luqinx.xbinder.serialize.ParcelAdapter
 import java.lang.reflect.Type
+import java.util.UUID
 
 /**
  * @author  qinchao
@@ -112,7 +113,7 @@ object XBinder {
             if (invokeType == InvokeType.LOCAL_ONLY || invokeType == InvokeType.LOCAL_FIRST) {
                 ServiceProvider.doFind(
                     processName,
-                    0,
+                    UUID.randomUUID().toString(),
                     serviceClass,
                     constructorTypes,
                     constructorArgs
